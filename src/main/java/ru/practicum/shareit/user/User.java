@@ -1,13 +1,13 @@
 package ru.practicum.shareit.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import ru.practicum.shareit.item.model.Item;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -19,24 +19,19 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Indexed
-@Table(name = "USERS")
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "USER_ID", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Integer id;
 
-    @NotBlank
-    @Email(message = "Please enter a valid e-mail address")
-    @NonNull
-    @Column(name = "USER_EMAIL", nullable = false)
+    @Column(name = "user_email", nullable = false)
     private String email;
 
-    @Column(name = "USER_NAME", nullable = false)
-    @NonNull
-    @NotBlank
+    @Column(name = "user_name", nullable = false)
     private String name;
-    @JsonIgnore
+
     @OneToMany(mappedBy = "user")
     private List<Item> items;
 

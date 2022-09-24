@@ -12,7 +12,7 @@ public class TrueOrFalseValidator implements ConstraintValidator<TrueOrFalse, Bo
     @Override
     public boolean isValid(Boolean value, ConstraintValidatorContext context) {
 
-        if (value != null && !Optional.of(value).isEmpty()) {
+        if (value != null && Optional.of(value).isPresent()) {
             return true;
         }
 

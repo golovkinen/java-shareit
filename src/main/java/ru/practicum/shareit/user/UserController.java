@@ -1,13 +1,13 @@
 package ru.practicum.shareit.user;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -19,23 +19,22 @@ import java.util.Optional;
 public class UserController {
     private final IUserService iUserService;
 
-    @Autowired
     public UserController(IUserService iUserService) {
         this.iUserService = iUserService;
     }
 
     @GetMapping
-    public ResponseEntity<Collection<User>> readAll() {
-        final Collection<User> users = iUserService.readAll();
-        log.debug("Текущее количество пользователей: {}", users.size());
-        return users != null && !users.isEmpty()
-                ? new ResponseEntity<>(users, HttpStatus.OK)
+    public ResponseEntity<List<UserDto>> readAll() {
+        final Optional<List<UserDto>> users = iUserService.readAll();
+        log.debug("Текущее количество пользователей: {}", users.get().size());
+        return !users.isEmpty()
+                ? new ResponseEntity<>(users.get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<User> read(@PathVariable(name = "id") int id) {
-        final Optional<User> user = iUserService.read(id);
+    public ResponseEntity<UserDto> read(@PathVariable(name = "id") int id) {
+        final Optional<UserDto> user = iUserService.read(id);
 
         return !user.isEmpty()
                 ? new ResponseEntity<>(user.get(), HttpStatus.OK)
@@ -43,21 +42,21 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
+    public ResponseEntity<UserDto> create(@Valid @RequestBody UserDto userDto) {
 
-        User newUser = iUserService.create(user);
+        Optional<UserDto> newUser = iUserService.create(userDto);
         log.debug(String.valueOf(newUser));
 
-        return newUser != null
-                ? new ResponseEntity<>(newUser, HttpStatus.CREATED)
+        return !newUser.isEmpty()
+                ? new ResponseEntity<>(newUser.get(), HttpStatus.CREATED)
                 : new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
     @PatchMapping(value = "/{id}")
-    public ResponseEntity<User> update(@RequestBody User user,
-                                       @PathVariable(name = "id") int id) {
+    public ResponseEntity<UserDto> update(@RequestBody UserDto userDto,
+                                          @PathVariable(name = "id") int id) {
 
-        final boolean updated = iUserService.update(user, id);
+        final boolean updated = iUserService.update(userDto, id);
 
         return updated
                 ? new ResponseEntity<>(iUserService.read(id).get(), HttpStatus.OK)

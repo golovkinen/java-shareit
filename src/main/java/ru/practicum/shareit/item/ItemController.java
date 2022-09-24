@@ -1,15 +1,13 @@
 package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.IItemService;
-import ru.practicum.shareit.item.model.Item;
 
 import javax.validation.Valid;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,45 +15,43 @@ import java.util.Optional;
 @Slf4j
 @RequestMapping("/items")
 public class ItemController {
-
     private final IItemService iItemService;
 
-    @Autowired
     public ItemController(IItemService iItemService) {
         this.iItemService = iItemService;
     }
 
     @GetMapping
-    public ResponseEntity<Collection<Item>> readAllUserItems(@RequestHeader(name = "X-Sharer-User-Id", required = true) int userId) {
-        final Collection<Item> items = iItemService.readAllUserItems(userId);
-        return items != null
-                ? new ResponseEntity<>(items, HttpStatus.OK)
+    public ResponseEntity<List<ItemDto>> readAllUserItems(@RequestHeader(name = "X-Sharer-User-Id", required = true) int userId) {
+        final Optional<List<ItemDto>> items = iItemService.readAllUserItems(userId);
+        return !items.isEmpty()
+                ? new ResponseEntity<>(items.get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Item> read(@PathVariable(name = "id") int id) {
-        final Optional<Item> item = iItemService.read(id);
+    public ResponseEntity<ItemDto> read(@PathVariable(name = "id") int id) {
+        final ItemDto itemDto = iItemService.read(id);
 
-        return item != null
-                ? new ResponseEntity<>(item.get(), HttpStatus.OK)
+        return itemDto != null
+                ? new ResponseEntity<>(itemDto, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/search")
-    public ResponseEntity<Collection<Item>> search(@RequestParam String text) {
-        final List<Item> items = iItemService.searchItemByWord(text);
+    public ResponseEntity<List<ItemDto>> search(@RequestParam String text) {
+        final Optional<List<ItemDto>> items = iItemService.searchItemByWord(text);
 
-        return items != null
-                ? new ResponseEntity<>(items, HttpStatus.OK)
+        return !items.isEmpty()
+                ? new ResponseEntity<>(items.get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping
-    public ResponseEntity<Item> create(@Valid
-                                       @RequestHeader(name = "X-Sharer-User-Id") int userId,
-                                       @RequestBody Item item) {
-        final Item newItem = iItemService.create(item, userId);
+    public ResponseEntity<ItemDto> create(@Valid @RequestBody ItemDto itemDto,
+                                          @RequestHeader(name = "X-Sharer-User-Id") int userId
+    ) {
+        final ItemDto newItem = iItemService.create(itemDto, userId);
         log.debug(String.valueOf(newItem));
         return newItem != null
                 ? new ResponseEntity<>(newItem, HttpStatus.CREATED)
@@ -63,14 +59,14 @@ public class ItemController {
     }
 
     @PatchMapping(value = "/{itemId}")
-    public ResponseEntity<Item> update(
+    public ResponseEntity<ItemDto> update(
             @RequestHeader(name = "X-Sharer-User-Id") int userId,
-            @RequestBody Item item,
+            @RequestBody ItemDto itemDto,
             @PathVariable int itemId) {
 
-        final boolean updated = iItemService.update(item, userId, itemId);
+        final boolean updated = iItemService.update(itemDto, userId, itemId);
         return updated
-                ? new ResponseEntity<>(iItemService.read(itemId).get(), HttpStatus.OK)
+                ? new ResponseEntity<>(iItemService.read(itemId), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 

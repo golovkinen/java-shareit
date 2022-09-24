@@ -40,9 +40,7 @@ public class ItemRepositoryCustom implements IItemRepositoryCustom {
             iItemRepository.save(itemToUpdate.get());
             return true;
         }
-
         return false;
-
     }
 
     @Override

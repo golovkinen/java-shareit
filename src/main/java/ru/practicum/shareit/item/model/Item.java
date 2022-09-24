@@ -1,17 +1,16 @@
 package ru.practicum.shareit.item.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
-import ru.practicum.shareit.annotation.TrueOrFalse;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 
 /**
  * TODO Sprint add-controllers.
@@ -22,29 +21,21 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @Entity
 @Indexed
-@Table(name = "ITEMS")
+@Table(name = "items")
 public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ITEM_ID", nullable = false)
+    @Column(name = "item_id", nullable = false)
     private Integer id;
-    @Column(name = "ITEM_NAME", nullable = false)
-    @NonNull
-    @NotBlank
+    @Column(name = "item_name", nullable = false)
     @FullTextField
     private String name;
-    @Column(name = "ITEM_DESCRIPTION", nullable = false)
-    @NonNull
-    @NotBlank
-    @Size(max = 200)
+    @Column(name = "item_description", nullable = false)
     @FullTextField
     private String description;
-    @Column(name = "ITEM_AVAILABLE")
-    @NonNull
-    @TrueOrFalse
+    @Column(name = "item_available", nullable = false)
     @GenericField
     private Boolean available;
-    @JsonIgnore
     @ManyToOne
     @IndexedEmbedded
     private User user;

@@ -1,22 +1,24 @@
 package ru.practicum.shareit.item.model;
 
+import ru.practicum.shareit.item.dto.ItemDto;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface IItemService {
-    Item create(Item item, int userId);
+    ItemDto create(ItemDto itemDto, int userId);
 
-    List<Item> readAll();
+    Optional<List<ItemDto>> readAll();
 
-    List<Item> readAllUserItems(int id);
+    Optional<List<ItemDto>> readAllUserItems(int id);
 
-    Optional<Item> read(int id);
+    ItemDto read(int id);
 
-    boolean update(Item item, int userId, int itemId);
+    boolean update(ItemDto itemDto, int userId, int itemId);
 
     boolean delete(int id, int userId);
 
     boolean deleteAllUserItems(int id);
 
-    List<Item> searchItemByWord(String searchSentence);
+    Optional<List<ItemDto>> searchItemByWord(String searchSentence);
 }

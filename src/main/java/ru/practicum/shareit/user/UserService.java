@@ -1,9 +1,11 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService implements IUserService {
@@ -17,30 +19,44 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User create(User user) {
-        if (iUserRepository.findByEmail(user.getEmail()).isPresent()) {
-            return null;
+    public Optional<UserDto> create(UserDto userDto) {
+        if (!iUserRepository.findByEmail(userDto.getEmail()).isEmpty()) {
+            return Optional.empty();
         }
-        return iUserRepository.save(user);
+        return Optional.of(UserMapper.toUserDto(iUserRepository.save(UserMapper.toUser(userDto))));
     }
 
     @Override
-    public List<User> readAll() {
-        return iUserRepository.findAll();
+    public Optional<List<UserDto>> readAll() {
+        List<User> usersList = iUserRepository.findAll();
+        if (usersList == null) {
+            return Optional.empty();
+        }
+        return Optional.of(usersList.stream().map(f -> UserMapper.toUserDto(f))
+                .collect(Collectors.toList()));
     }
 
     @Override
-    public Optional<User> read(int id) {
-        return iUserRepository.findById(id);
+    public Optional<UserDto> read(int id) {
+        Optional<User> user = iUserRepository.findById(id);
+        if (user.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(UserMapper.toUserDto(user.get()));
     }
 
     @Override
-    public boolean update(User user, int userId) {
-        return iUserRepositoryCustom.updateUser(user, userId);
+    public boolean update(UserDto userDto, int userId) {
+        return iUserRepositoryCustom.updateUser(UserMapper.toUser(userDto), userId);
     }
 
     @Override
     public boolean delete(int id) {
         return iUserRepositoryCustom.deleteById(id);
+    }
+
+    @Override
+    public Optional<User> getUser(int userId) {
+        return iUserRepository.findById(userId);
     }
 }
