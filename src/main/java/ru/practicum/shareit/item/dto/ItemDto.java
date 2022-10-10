@@ -1,13 +1,9 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import ru.practicum.shareit.annotation.TrueOrFalse;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @AllArgsConstructor
@@ -17,14 +13,14 @@ import javax.validation.constraints.Size;
 public class ItemDto {
 
     private Integer id;
-    @NotNull
+    @NonNull
     @NotBlank
     private String name;
-    @NotNull
+    @NonNull
     @NotBlank
     @Size(max = 200)
     private String description;
-    @NotNull
+    @NonNull
     @TrueOrFalse
     private Boolean available;
 

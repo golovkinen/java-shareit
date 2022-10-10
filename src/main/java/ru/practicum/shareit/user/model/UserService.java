@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.model;
 
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -20,9 +20,7 @@ public class UserService implements IUserService {
 
     @Override
     public Optional<UserDto> create(UserDto userDto) {
-        if (!iUserRepository.findByEmail(userDto.getEmail()).isEmpty()) {
-            return Optional.empty();
-        }
+
         return Optional.of(UserMapper.toUserDto(iUserRepository.save(UserMapper.toUser(userDto))));
     }
 
@@ -32,7 +30,7 @@ public class UserService implements IUserService {
         if (usersList == null) {
             return Optional.empty();
         }
-        return Optional.of(usersList.stream().map(f -> UserMapper.toUserDto(f))
+        return Optional.of(usersList.stream().map(UserMapper::toUserDto)
                 .collect(Collectors.toList()));
     }
 

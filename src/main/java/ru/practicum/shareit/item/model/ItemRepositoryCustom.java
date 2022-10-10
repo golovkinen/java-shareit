@@ -4,8 +4,12 @@ import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exceptionhandler.BadRequestException;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,4 +79,50 @@ public class ItemRepositoryCustom implements IItemRepositoryCustom {
                 .fetchHits(20);
     }
 
+    @Override
+    public Optional<Booking> getItemsLastBooking(int itemId) {
+        try {
+            return Optional.of((Booking) entityManager.createQuery("select b from Booking b where b.item.id = :itemId and b.endDate < :dateNow ORDER BY b.endDate desc")
+                    .setParameter("itemId", itemId)
+                    .setParameter("dateNow", LocalDateTime.now())
+                    .setMaxResults(1)
+                    .getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<Booking> getItemsNextBooking(int itemId) {
+        try {
+            return Optional.of((Booking) entityManager.createQuery("select b from Booking b where b.item.id = :itemId and b.startDate > :dateNow ORDER BY b.startDate asc")
+                    .setParameter("itemId", itemId)
+                    .setParameter("dateNow", LocalDateTime.now())
+                    .setMaxResults(1)
+                    .getSingleResult());
+        } catch (NoResultException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<List<Booking>> checkUserBookedItemBeforeComment(int itemId, int authorId) {
+        try {
+            List<Booking> list = entityManager.createQuery("select b from Booking b where b.item.id = :itemId " +
+                            "and b.user.id = :authorId and b.status = 'APPROVED' and b.endDate < :dateNow " +
+                            "ORDER BY b.startDate desc")
+                    .setParameter("itemId", itemId)
+                    .setParameter("authorId", authorId)
+                    .setParameter("dateNow", LocalDateTime.now())
+                    .getResultList();
+
+            if (list.isEmpty()) {
+                throw new BadRequestException("Нельзя комментировать пока не прошла аренда");
+            }
+
+            return Optional.of(list);
+        } catch (NoResultException e) {
+            throw new BadRequestException("Нельзя комментировать пока не прошла аренда");
+        }
+    }
 }
