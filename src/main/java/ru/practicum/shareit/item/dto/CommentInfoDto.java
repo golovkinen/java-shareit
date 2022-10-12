@@ -7,11 +7,12 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 public class CommentInfoDto {
+
     private Integer id;
     private String text;
     private String authorName;

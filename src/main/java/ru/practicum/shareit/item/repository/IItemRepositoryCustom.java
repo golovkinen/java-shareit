@@ -1,14 +1,12 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item.repository;
 
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface IItemRepositoryCustom {
-    boolean updateItem(Item item, int userId, int itemId);
-
-    boolean deleteItem(int itemId, int userId);
 
     List<Item> searchItemByWord(String searchSentence);
 
@@ -16,5 +14,4 @@ public interface IItemRepositoryCustom {
 
     Optional<Booking> getItemsNextBooking(int itemId);
 
-    Optional<List<Booking>> checkUserBookedItemBeforeComment(int itemId, int authorId);
 }

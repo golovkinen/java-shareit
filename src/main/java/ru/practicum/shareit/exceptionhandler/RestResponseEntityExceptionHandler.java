@@ -44,4 +44,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                 new ErrorResponse(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({ConflictException.class})
+    public ResponseEntity<Object> handleConflictException(
+            Exception ex, WebRequest request) {
+        return new ResponseEntity<>(
+                new ErrorResponse(ex.getMessage()), HttpStatus.CONFLICT);
+    }
+
 }

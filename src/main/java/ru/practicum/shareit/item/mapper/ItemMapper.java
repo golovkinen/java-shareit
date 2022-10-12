@@ -1,9 +1,9 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item.mapper;
 
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.dto.BookingInfoForItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemInfoDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
@@ -33,39 +33,39 @@ public class ItemMapper {
                     item.getComments().stream().map(CommentMapper::toCommentDto).collect(Collectors.toList()));
         }
 
-        if (lastBooking.isEmpty() && !nextBooking.isEmpty()) {
+        if (lastBooking.isEmpty() && nextBooking.isPresent()) {
             return new ItemInfoDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable(),
                     null,
-                    new BookingInfoForItemDto(nextBooking.get().getBookingId(), nextBooking.get().getUser().getId()),
+                    new ItemInfoDto.BookingInfoForItemDto(nextBooking.get().getBookingId(), nextBooking.get().getUser().getId()),
                     new ArrayList<>());
         }
 
-        if (!lastBooking.isEmpty() && nextBooking.isEmpty() && item.getComments().isEmpty()) {
+        if (lastBooking.isPresent() && nextBooking.isEmpty() && item.getComments().isEmpty()) {
 
             return new ItemInfoDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable(),
-                    new BookingInfoForItemDto(lastBooking.get().getBookingId(), lastBooking.get().getUser().getId()),
+                    new ItemInfoDto.BookingInfoForItemDto(lastBooking.get().getBookingId(), lastBooking.get().getUser().getId()),
                     null,
                     new ArrayList<>());
         }
 
-        if (!lastBooking.isEmpty() && nextBooking.isEmpty() && !item.getComments().isEmpty()) {
+        if (lastBooking.isPresent() && nextBooking.isEmpty() && !item.getComments().isEmpty()) {
 
             return new ItemInfoDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable(),
-                    new BookingInfoForItemDto(lastBooking.get().getBookingId(), lastBooking.get().getUser().getId()),
+                    new ItemInfoDto.BookingInfoForItemDto(lastBooking.get().getBookingId(), lastBooking.get().getUser().getId()),
                     null,
                     item.getComments().stream().map(CommentMapper::toCommentDto).collect(Collectors.toList()));
         }
 
-        if (!lastBooking.isEmpty() && !nextBooking.isEmpty() && item.getComments().isEmpty()) {
+        if (lastBooking.isPresent() && nextBooking.isPresent() && item.getComments().isEmpty()) {
             return new ItemInfoDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable(),
-                    new BookingInfoForItemDto(lastBooking.get().getBookingId(), lastBooking.get().getUser().getId()),
-                    new BookingInfoForItemDto(nextBooking.get().getBookingId(), nextBooking.get().getUser().getId()),
+                    new ItemInfoDto.BookingInfoForItemDto(lastBooking.get().getBookingId(), lastBooking.get().getUser().getId()),
+                    new ItemInfoDto.BookingInfoForItemDto(nextBooking.get().getBookingId(), nextBooking.get().getUser().getId()),
                     new ArrayList<>());
         }
 
         return new ItemInfoDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable(),
-                new BookingInfoForItemDto(lastBooking.get().getBookingId(), lastBooking.get().getUser().getId()),
-                new BookingInfoForItemDto(nextBooking.get().getBookingId(), nextBooking.get().getUser().getId()),
+                new ItemInfoDto.BookingInfoForItemDto(lastBooking.get().getBookingId(), lastBooking.get().getUser().getId()),
+                new ItemInfoDto.BookingInfoForItemDto(nextBooking.get().getBookingId(), nextBooking.get().getUser().getId()),
                 item.getComments().stream().map(CommentMapper::toCommentDto).collect(Collectors.toList()));
 
     }

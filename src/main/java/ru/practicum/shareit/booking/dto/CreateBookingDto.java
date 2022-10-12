@@ -1,15 +1,12 @@
 package ru.practicum.shareit.booking.dto;
 
-import lombok.*;
+import lombok.Data;
+import lombok.NonNull;
 
 import javax.validation.constraints.FutureOrPresent;
 import java.time.LocalDateTime;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-
+@Data
 public class CreateBookingDto {
 
     @NonNull

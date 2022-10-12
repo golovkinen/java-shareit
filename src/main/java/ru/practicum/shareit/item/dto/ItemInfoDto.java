@@ -21,16 +21,12 @@ public class ItemInfoDto {
     private BookingInfoForItemDto nextBooking;
     private List<CommentInfoDto> comments;
 
-
-   /* public static class CommentDto{
-        Integer id;
-        String text;
-        String authorName;
-
-        public CommentDto(Integer id, String text, String authorName) {
-            this.id = id;
-            this.text = text;
-            this.authorName = authorName;
-        }
-    } */
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class BookingInfoForItemDto {
+        private Integer id;
+        private Integer bookerId;
+    }
 }

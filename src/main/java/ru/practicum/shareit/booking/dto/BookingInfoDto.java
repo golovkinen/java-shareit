@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.booking.enums.Status;
 
 import java.time.LocalDateTime;
 
@@ -21,20 +21,21 @@ public class BookingInfoDto {
     private UserInfoDto booker;
     private ItemInfoForBookingDto item;
 
- /*   public static class UserInfoDto {
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Getter
+    @Setter
+    public static class UserInfoDto {
         Integer id;
-        public UserInfoDto(Integer id) {
-            this.id = id;
-        }
     }
 
-    public static class ItemInfoDto {
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter
+    @Setter
+    public static class ItemInfoForBookingDto {
         Integer id;
         String name;
 
-        public ItemInfoDto(Integer id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-    }*/
+    }
 }

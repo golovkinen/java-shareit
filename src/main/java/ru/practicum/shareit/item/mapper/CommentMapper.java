@@ -1,7 +1,9 @@
-package ru.practicum.shareit.item.model;
+package ru.practicum.shareit.item.mapper;
 
 import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.CommentInfoDto;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
