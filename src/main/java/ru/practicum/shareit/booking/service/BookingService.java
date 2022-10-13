@@ -73,16 +73,20 @@ public class BookingService implements IBookingService {
                 case "FUTURE":
                     bookingList = iBookingRepository.findAllFutureUserBookings(LocalDateTime.now(), userId);
                     break;
+
+                case "WAITING":
+                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId);
+                    break;
+
+                case "REJECTED":
+                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId);
+                    break;
             }
 
             return bookingList
                     .stream().map(BookingMapper::toBookingDto)
                     .collect(Collectors.toList());
 
-        } else if (Arrays.stream(Status.class.getEnumConstants()).anyMatch(e -> e.name().equals(state))) {
-            return iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId).stream()
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toList());
         }
         log.error("WrongStateException: {}", "readAllUserBookings - Unknown state: UNSUPPORTED_STATUS");
         throw new WrongStateException("Unknown state: UNSUPPORTED_STATUS");
@@ -145,16 +149,20 @@ public class BookingService implements IBookingService {
                 case "FUTURE":
                     bookingList = iBookingRepository.findAllItemOwnerFutureBookings(LocalDateTime.now(), ownerId);
                     break;
+
+                case "WAITING":
+                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId);
+                    break;
+
+                case "REJECTED":
+                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId);
+                    break;
             }
 
             return bookingList
                     .stream().map(BookingMapper::toBookingDto)
                     .collect(Collectors.toList());
 
-        } else if (Arrays.stream(Status.class.getEnumConstants()).anyMatch(e -> e.name().equals(state))) {
-            return iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId).stream()
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toList());
         }
 
         log.error("WrongStateException: {}", "readBookingListOfAllUserItems - Unknown state: UNSUPPORTED_STATUS");

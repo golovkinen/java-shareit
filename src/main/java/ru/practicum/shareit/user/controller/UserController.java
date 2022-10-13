@@ -9,9 +9,6 @@ import ru.practicum.shareit.user.service.IUserService;
 import javax.validation.Valid;
 import java.util.List;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @Slf4j
 @RequestMapping(path = "/users")

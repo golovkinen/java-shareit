@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptionhandler.BadRequestException;
 import ru.practicum.shareit.exceptionhandler.NotFoundException;
-import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.CommentInfoDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemInfoDto;
@@ -178,7 +177,7 @@ public class ItemService implements IItemService {
     }
 
     @Override
-    public CommentInfoDto createComment(CommentCreateDto commentCreateDto, Integer itemId, Integer authorId) {
+    public CommentInfoDto createComment(CommentInfoDto commentInfoDto, Integer itemId, Integer authorId) {
         Optional<User> author = iUserService.getUser(authorId);
         Optional<Item> item = iItemRepository.findById(itemId);
         if (author.isEmpty()) {
@@ -201,7 +200,7 @@ public class ItemService implements IItemService {
             throw new BadRequestException("Нельзя комментировать пока не прошла аренда");
         }
 
-        Comment newComment = iCommentRepository.save(CommentMapper.toComment(commentCreateDto, author.get(), item.get()));
+        Comment newComment = iCommentRepository.save(CommentMapper.toComment(commentInfoDto, author.get(), item.get()));
 
         item.get().getComments().add(newComment);
 

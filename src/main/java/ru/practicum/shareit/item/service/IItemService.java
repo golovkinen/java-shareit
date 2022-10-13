@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.service;
 
 import org.springframework.http.HttpStatus;
-import ru.practicum.shareit.item.dto.CommentCreateDto;
 import ru.practicum.shareit.item.dto.CommentInfoDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemInfoDto;
@@ -25,5 +24,5 @@ public interface IItemService {
 
     List<ItemInfoDto> searchItemByWord(String searchSentence);
 
-    CommentInfoDto createComment(CommentCreateDto commentCreateDto, Integer itemId, Integer userId);
+    CommentInfoDto createComment(CommentInfoDto commentInfoDto, Integer itemId, Integer userId);
 }
