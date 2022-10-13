@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingInfoDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class BookingService implements IBookingService {
 
     private final IUserService iUserService;
@@ -42,10 +44,12 @@ public class BookingService implements IBookingService {
         Optional<User> user = iUserService.getUser(userId);
 
         if (user.isEmpty()) {
+            log.error("NotFoundException: {}", "readAllUserBookings - Юзера с ИД " + userId + " не существует");
             throw new NotFoundException("Юзера с ИД " + userId + " не существует");
         }
 
         if (user.get().getBookings().isEmpty()) {
+            log.error("NotFoundException: {}", "readAllUserBookings - У юзера с ИД " + userId + " нет запросов на аренду");
             throw new NotFoundException("У юзера с ИД " + userId + " нет запросов на аренду");
         }
 
@@ -80,7 +84,7 @@ public class BookingService implements IBookingService {
                     .map(BookingMapper::toBookingDto)
                     .collect(Collectors.toList());
         }
-
+        log.error("WrongStateException: {}", "readAllUserBookings - Unknown state: UNSUPPORTED_STATUS");
         throw new WrongStateException("Unknown state: UNSUPPORTED_STATUS");
     }
 
@@ -90,17 +94,19 @@ public class BookingService implements IBookingService {
         Optional<User> user = iUserService.getUser(userId);
 
         if (booking.isEmpty()) {
+            log.error("NotFoundException: {}", "Get Booking - Не найден Booking с ИД " + bookingId);
             throw new NotFoundException("Не найден Booking с ИД " + bookingId);
         }
 
         if (user.isEmpty()) {
+            log.error("NotFoundException: {}", "Get Booking - Не найден Юзер с ИД " + userId);
             throw new NotFoundException("Не найден Юзер с ИД " + userId);
         }
 
         if (booking.get().getUser().getId() == userId || booking.get().getItem().getUser().getId() == userId) {
             return BookingMapper.toBookingDto(booking.get());
         }
-
+        log.error("NotFoundException: {}", "Get Booking - Бронирование может просматривать только создатель или хозяин вещи");
         throw new NotFoundException("Бронирование может просматривать только создатель или хозяин вещи");
     }
 
@@ -110,10 +116,12 @@ public class BookingService implements IBookingService {
         Optional<User> owner = iUserService.getUser(ownerId);
 
         if (owner.isEmpty()) {
+            log.error("NotFoundException: {}", "readBookingListOfAllUserItems - User with ID " + ownerId + " not found");
             throw new NotFoundException("Юзера с ИД " + ownerId + " не существует");
         }
 
         if (owner.get().getItems().isEmpty()) {
+            log.error("NotFoundException: {}", "readBookingListOfAllUserItems - У юзера с ИД " + ownerId + " нет вещей для аренды");
             throw new NotFoundException("У юзера с ИД " + ownerId + " нет вещей для аренды");
         }
 
@@ -149,7 +157,7 @@ public class BookingService implements IBookingService {
                     .collect(Collectors.toList());
         }
 
-
+        log.error("WrongStateException: {}", "readBookingListOfAllUserItems - Unknown state: UNSUPPORTED_STATUS");
         throw new WrongStateException("Unknown state: UNSUPPORTED_STATUS");
 
     }
@@ -158,24 +166,29 @@ public class BookingService implements IBookingService {
     public BookingInfoDto create(int userId, CreateBookingDto createBookingDto) {
 
         if (createBookingDto.getEnd().isBefore(createBookingDto.getStart())) {
+            log.error("BadRequestException: {}", "Booking create - End Date is before Start Date");
             throw new BadRequestException("End Date is before Start Date");
         }
 
         Optional<User> user = iUserService.getUser(userId);
         if (user.isEmpty()) {
+            log.error("NotFoundException: {}", "Booking create - User with ID " + userId + " not found");
             throw new NotFoundException("User with ID " + userId + " not found");
         }
 
         Optional<Item> item = iItemRepository.findById(createBookingDto.getItemId());
         if (item.isEmpty()) {
+            log.error("NotFoundException: {}", "Booking create - Item with ID " + createBookingDto.getItemId() + " not found");
             throw new NotFoundException("Item with ID " + createBookingDto.getItemId() + " not found");
         }
 
         if (!item.get().getAvailable()) {
+            log.error("BadRequestException: {}", "Booking create - Item with ID " + createBookingDto.getItemId() + " not available");
             throw new BadRequestException("Item with ID " + createBookingDto.getItemId() + " not available");
         }
 
         if (userId == item.get().getUser().getId()) {
+            log.error("NotFoundException: {}", "Booking create - Хозяин не может бронировать свои вещи");
             throw new NotFoundException("Хозяин не может бронировать свои вещи");
         }
 
@@ -196,14 +209,17 @@ public class BookingService implements IBookingService {
         Optional<Booking> bookingToApprove = iBookingRepository.findById(bookingId);
 
         if (bookingToApprove.isEmpty()) {
+            log.error("NotFoundException: {}", "Booking Approval - Booking с ИД " + bookingId + " не найден");
             throw new NotFoundException("Booking с ИД " + bookingId + " не найден");
         }
 
         if (!bookingToApprove.get().getStatus().equals(Status.WAITING)) {
+            log.error("BadRequestException: {}", "Booking Approval - Booking с ИД " + bookingId + " статус уже изменен на " + bookingToApprove.get().getStatus());
             throw new BadRequestException("Booking с ИД " + bookingId + " статус уже изменен на " + bookingToApprove.get().getStatus());
         }
 
         if (bookingToApprove.get().getItem().getUser().getId() != userId) {
+            log.error("NotFoundException: {}", "Booking Approval - Пользователь с ИД " + userId + " не собственник вещи");
             throw new NotFoundException("Пользователь с ИД " + userId + " не собственник вещи");
         }
 
@@ -231,6 +247,7 @@ public class BookingService implements IBookingService {
                 return BookingMapper.toBookingDto(approvedBooking);
 
                 default:
+                    log.error("BadRequestException: {}", "Booking Approval - Должен быть либо false, либо true");
                     throw new BadRequestException("Должен быть либо false, либо true");
             }
     }
@@ -254,6 +271,8 @@ public class BookingService implements IBookingService {
                                 f.getEndDate().isAfter(createBookingDto.getStart()) ||
                         f.getStartDate().isBefore(createBookingDto.getStart()) &&
                                 f.getEndDate().isAfter(createBookingDto.getEnd()))) {
+            log.error("BadRequestException: {}", "Не прошла проверка на пересечение по времени. В период с " + createBookingDto.getStart() + " по " +
+                    createBookingDto.getEnd() + " вещь с ИД " + createBookingDto.getItemId() + " недоступна");
             throw new BadRequestException("В период с " + createBookingDto.getStart() + " по "
                     + createBookingDto.getEnd() + " вещь с ИД " + createBookingDto.getItemId() + " недоступна");
         }

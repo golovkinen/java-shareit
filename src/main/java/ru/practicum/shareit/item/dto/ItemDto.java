@@ -1,9 +1,9 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.*;
-import ru.practicum.shareit.annotation.TrueOrFalse;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @AllArgsConstructor
@@ -20,8 +20,7 @@ public class ItemDto {
     @NotBlank
     @Size(max = 200)
     private String description;
-    @NonNull
-    @TrueOrFalse
+    @NotNull
     private Boolean available;
 
 }

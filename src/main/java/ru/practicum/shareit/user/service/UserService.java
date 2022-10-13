@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptionhandler.ConflictException;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserService implements IUserService {
 
     private final IUserRepository iUserRepository;
@@ -32,6 +34,7 @@ public class UserService implements IUserService {
     public List<UserDto> readAll() {
         List<User> usersList = iUserRepository.findAll();
         if (usersList.isEmpty()) {
+            log.error("NotFoundException: {}", "Пользователи не найдены");
             throw new NotFoundException("Пользователи не найдены");
         }
         return usersList.stream().map(UserMapper::toUserDto)
@@ -42,6 +45,7 @@ public class UserService implements IUserService {
     public UserDto read(int userId) {
         Optional<User> user = iUserRepository.findById(userId);
         if (user.isEmpty()) {
+            log.error("NotFoundException: {}", "При чтении из БД пользователя, Пользователь с ИД " + userId + " не найден");
             throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
         }
         return UserMapper.toUserDto(user.get());
@@ -53,10 +57,12 @@ public class UserService implements IUserService {
         Optional<User> userToUpdate = iUserRepository.findById(userId);
 
         if (userToUpdate.isEmpty()) {
+            log.error("NotFoundException: {}", "При обновлении пользователя, Пользователь с ИД " + userId + " не найден");
             throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
         }
 
         if (iUserRepository.findByEmail(userDto.getEmail()).isPresent()) {
+            log.error("ConflictException: {}", "При обновлении пользователя, Пользователь с с email " + userDto.getEmail() + " уже существует");
             throw new ConflictException("Пользователь с email " + userDto.getEmail() + " уже существует");
         }
 
@@ -74,6 +80,7 @@ public class UserService implements IUserService {
     @Override
     public HttpStatus delete(int userId) {
         if (iUserRepository.findById(userId).isEmpty()) {
+            log.error("NotFoundException: {}", "При удалении пользователя, Пользователь с ИД " + userId + " не найден");
             throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
         }
         iUserRepository.deleteById(userId);
