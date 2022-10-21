@@ -11,8 +11,7 @@ import java.util.List;
 
 public interface IItemRepository extends JpaRepository<Item, Integer> {
 
-    @Query("DELETE FROM Item item WHERE item.user = :id")
-    void deleteAllUserItems(@Param(value = "id") int id);
+    List<Item> findAllByUserId(int userId);
 
     @Query("select b from Booking b where b.item.id = :itemId and b.user.id = :authorId and b.status = 'APPROVED' and b.endDate < :dateNow ORDER BY b.startDate desc")
     List<Booking> checkUserBookedItemBeforeComment(

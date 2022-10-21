@@ -8,10 +8,14 @@ import java.util.Optional;
 
 public interface IItemRepositoryCustom {
 
-    List<Item> searchItemByWord(String searchSentence);
+    List<Item> searchItemByWord(String searchSentence, int from, int size);
 
     Optional<Booking> getItemsLastBooking(int itemId);
 
     Optional<Booking> getItemsNextBooking(int itemId);
+
+    List<Item> readAllItemsPaged(int from, int size);
+
+    List<Item> readAllUserItemsByUserIdPaged(int userId, int from, int size);
 
 }

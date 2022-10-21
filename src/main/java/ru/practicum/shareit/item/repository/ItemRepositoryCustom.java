@@ -19,7 +19,8 @@ public class ItemRepositoryCustom implements IItemRepositoryCustom {
     @Autowired
     private EntityManager entityManager;
 
-    public List<Item> searchItemByWord(String searchSentence) {
+    @Override
+    public List<Item> searchItemByWord(String searchSentence, int from, int size) {
         SearchSession searchSession = Search.session(entityManager);
 
         return searchSession.search(Item.class)
@@ -36,7 +37,8 @@ public class ItemRepositoryCustom implements IItemRepositoryCustom {
                                 .field("available")
                                 .matching(true))
                 )
-                .fetchHits(10);
+                .sort(f -> f.field("id").asc())
+                .fetchHits(from, size);
     }
 
     @Override
@@ -63,5 +65,22 @@ public class ItemRepositoryCustom implements IItemRepositoryCustom {
         } catch (NoResultException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public List<Item> readAllItemsPaged(int from, int size) {
+        return entityManager.createQuery("select i from Item i")
+                .setFirstResult(from)
+                .setMaxResults(size)
+                .getResultList();
+    }
+
+    @Override
+    public List<Item> readAllUserItemsByUserIdPaged(int userId, int from, int size) {
+        return entityManager.createQuery("select i from Item i where i.user.id = :userId order by i.id asc")
+                .setParameter("userId", userId)
+                .setFirstResult(from)
+                .setMaxResults(size)
+                .getResultList();
     }
 }

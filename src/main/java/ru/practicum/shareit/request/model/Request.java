@@ -1,34 +1,38 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Set;
 
-/**
- * TODO Sprint add-item-requests.
- */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "requests")
-public class ItemRequest {
+public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "request_id", nullable = false)
     private Integer id;
+
     @Column(name = "description", nullable = false)
-    @FullTextField
     private String description;
-    @IndexedEmbedded
+
+    @Column(name = "created", nullable = false)
+    private LocalDateTime created;
+
     @ManyToOne
     @JoinColumn(name = "requester_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "request")
+    private Set<Item> requestResponses;
 }

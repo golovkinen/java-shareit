@@ -10,9 +10,9 @@ import java.util.List;
 public interface IItemService {
     ItemInfoDto create(ItemDto itemDto, int userId);
 
-    List<ItemInfoDto> readAll();
+    List<ItemInfoDto> readAll(int from, int size);
 
-    List<ItemInfoDto> readAllUserItems(int id);
+    List<ItemInfoDto> readAllUserItems(int id, int from, int size);
 
     ItemInfoDto read(int id, int userId);
 
@@ -22,7 +22,7 @@ public interface IItemService {
 
     HttpStatus deleteAllUserItems(int id);
 
-    List<ItemInfoDto> searchItemByWord(String searchSentence);
+    List<ItemInfoDto> searchItemByWord(String searchSentence, int from, int size);
 
     CommentInfoDto createComment(CommentInfoDto commentInfoDto, Integer itemId, Integer userId);
 }

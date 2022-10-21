@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -28,6 +30,7 @@ public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id", nullable = false)
+    @GenericField(sortable = Sortable.YES)
     private Integer id;
 
     @Column(name = "item_name", nullable = false)
@@ -52,4 +55,8 @@ public class Item {
 
     @OneToMany(mappedBy = "item")
     private Set<Comment> comments;
+
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private Request request;
 }
