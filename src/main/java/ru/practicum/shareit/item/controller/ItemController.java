@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.dto.ItemInfoDto;
 import ru.practicum.shareit.item.service.IItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -22,8 +23,16 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemInfoDto> readAllUserItems(@RequestHeader(name = "X-Sharer-User-Id") int userId) {
-        return iItemService.readAllUserItems(userId);
+    public List<ItemInfoDto> readAllUserItems(@RequestHeader(name = "X-Sharer-User-Id") int userId,
+                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                              @PositiveOrZero @RequestParam(name = "size", defaultValue = "10") int size) {
+        return iItemService.readAllUserItems(userId, from, size);
+    }
+
+    @GetMapping(value = "/all")
+    public List<ItemInfoDto> readAllItems(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                          @PositiveOrZero @RequestParam(name = "size", defaultValue = "10") int size) {
+        return iItemService.readAll(from, size);
     }
 
     @GetMapping(value = "/{id}")
@@ -33,8 +42,10 @@ public class ItemController {
     }
 
     @GetMapping(value = "/search")
-    public List<ItemInfoDto> search(@RequestParam String text) {
-        return iItemService.searchItemByWord(text);
+    public List<ItemInfoDto> search(@RequestParam String text,
+                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                    @PositiveOrZero @RequestParam(name = "size", defaultValue = "10") int size) {
+        return iItemService.searchItemByWord(text, from, size);
     }
 
     @PostMapping

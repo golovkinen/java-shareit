@@ -15,7 +15,10 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ICommentRepository;
 import ru.practicum.shareit.item.repository.IItemRepository;
 import ru.practicum.shareit.item.repository.IItemRepositoryCustom;
+import ru.practicum.shareit.request.model.Request;
+import ru.practicum.shareit.request.repository.IRequestRepository;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.IUserRepository;
 import ru.practicum.shareit.user.service.IUserService;
 
 import java.time.LocalDateTime;
@@ -31,12 +34,16 @@ public class ItemService implements IItemService {
     private final IItemRepositoryCustom iItemRepositoryCustom;
     private final ICommentRepository iCommentRepository;
     private final IUserService iUserService;
+    private final IUserRepository iUserRepository;
+    private final IRequestRepository iRequestRepository;
 
-    public ItemService(IItemRepository iItemRepository, IItemRepositoryCustom iItemRepositoryCustom, ICommentRepository iCommentRepository, IUserService iUserService) {
+    public ItemService(IItemRepository iItemRepository, IItemRepositoryCustom iItemRepositoryCustom, ICommentRepository iCommentRepository, IUserService iUserService, IUserRepository iUserRepository, IRequestRepository iRequestRepository) {
         this.iItemRepository = iItemRepository;
         this.iItemRepositoryCustom = iItemRepositoryCustom;
         this.iCommentRepository = iCommentRepository;
         this.iUserService = iUserService;
+        this.iUserRepository = iUserRepository;
+        this.iRequestRepository = iRequestRepository;
     }
 
     @Override
@@ -46,18 +53,42 @@ public class ItemService implements IItemService {
             log.error("NotFoundException: {}", "При создании вещи, Пользователь с ИД " + userId + " не найден");
             throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
         }
+
         Item item = ItemMapper.toItem(itemDto, user.get());
 
+        if (itemDto.getRequestId() != null) {
+
+            Optional<Request> request = iRequestRepository.findById(itemDto.getRequestId());
+
+            if (request.isEmpty()) {
+                log.error("NotFoundException: {}", "Запрос с ИД " + itemDto.getRequestId() + " не найден");
+                throw new NotFoundException("Запрос с ИД " + itemDto.getRequestId() + " не найден");
+            }
+
+            item.setRequest(request.get());
+            request.get().getRequestResponses().add(item);
+            iRequestRepository.save(request.get());
+        }
+
         Item newItem = iItemRepository.save(item);
+
         user.get().getItems().add(newItem);
+        iUserRepository.save(user.get());
         return ItemMapper.toItemDto(newItem,
                 Optional.empty(),
                 Optional.empty());
     }
 
     @Override
-    public List<ItemInfoDto> readAll() {
-        List<Item> itemsList = iItemRepository.findAll();
+    public List<ItemInfoDto> readAll(int from, int size) {
+
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
+
+        List<Item> itemsList = iItemRepositoryCustom.readAllItemsPaged(from, size);
+
         if (itemsList.isEmpty()) {
             throw new NotFoundException("Совсем нет вещей");
         }
@@ -68,13 +99,25 @@ public class ItemService implements IItemService {
     }
 
     @Override
-    public List<ItemInfoDto> readAllUserItems(int userId) {
+    public List<ItemInfoDto> readAllUserItems(int userId, int from, int size) {
         Optional<User> user = iUserService.getUser(userId);
         if (user.isEmpty()) {
             log.error("NotFoundException: {}", "При чтении всех вещей, Пользователь с ИД " + userId + " не найден");
             throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
         }
-        return user.get().getItems().stream().map(f -> ItemMapper.toItemDto(f,
+
+        if (user.get().getItems().isEmpty()) {
+            log.error("NotFoundException: {}", "При чтении всех вещей, у пользователя с ИД " + userId + " вещей не найдено");
+            throw new NotFoundException("У пользователя с ИД " + userId + " нет вещей");
+        }
+
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
+
+        return iItemRepositoryCustom.readAllUserItemsByUserIdPaged(userId, from, size).stream()
+                .map(f -> ItemMapper.toItemDto(f,
                         iItemRepositoryCustom.getItemsLastBooking(f.getId()),
                         iItemRepositoryCustom.getItemsNextBooking(f.getId())))
                 .collect(Collectors.toList());
@@ -151,24 +194,28 @@ public class ItemService implements IItemService {
         return HttpStatus.OK;
     }
 
-    @Override
     public HttpStatus deleteAllUserItems(int id) {
-        if (iUserService.getUser(id).isEmpty()) {
+        if (this.iUserService.getUser(id).isEmpty()) {
             log.error("NotFoundException: {}", "При удалении всех вещей пользователя, Пользователь с ИД " + id + " не найден");
             throw new NotFoundException("Пользователь с ИД " + id + " не найден");
+        } else {
+            this.iItemRepository.findAllByUserId(id).stream().forEach((f) -> {
+                this.iItemRepository.deleteById(f.getId());
+            });
+            return HttpStatus.OK;
         }
-
-        iItemRepository.deleteAllUserItems(id);
-        return HttpStatus.OK;
     }
 
     @Override
-    public List<ItemInfoDto> searchItemByWord(String searchSentence) {
-        List<Item> searchResult = iItemRepositoryCustom.searchItemByWord(searchSentence);
-        if (searchResult == null) {
-            log.error("NotFoundException: {}", "При поиске ничего не найдено");
-            throw new NotFoundException("Ничего не найдено");
+    public List<ItemInfoDto> searchItemByWord(String searchSentence, int from, int size) {
+
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
         }
+
+        List<Item> searchResult = iItemRepositoryCustom.searchItemByWord(searchSentence, from, size);
+
         return searchResult.stream()
                 .map(f -> ItemMapper.toItemDto(f,
                         iItemRepositoryCustom.getItemsLastBooking(f.getId()),

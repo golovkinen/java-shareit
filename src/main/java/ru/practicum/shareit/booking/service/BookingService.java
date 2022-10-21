@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingInfoDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
@@ -10,6 +11,7 @@ import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.IBookingRepository;
+import ru.practicum.shareit.booking.repository.IBookingRepositoryCustom;
 import ru.practicum.shareit.exceptionhandler.BadRequestException;
 import ru.practicum.shareit.exceptionhandler.NotFoundException;
 import ru.practicum.shareit.exceptionhandler.WrongStateException;
@@ -18,7 +20,6 @@ import ru.practicum.shareit.item.repository.IItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.IUserService;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,15 +33,23 @@ public class BookingService implements IBookingService {
     private final IUserService iUserService;
     private final IItemRepository iItemRepository;
     private final IBookingRepository iBookingRepository;
+    private final IBookingRepositoryCustom iBookingRepositoryCustom;
 
-    public BookingService(IUserService iUserService, IItemRepository iItemRepository, IBookingRepository iBookingRepository) {
+    public BookingService(IUserService iUserService, IItemRepository iItemRepository, IBookingRepository iBookingRepository, IBookingRepositoryCustom iBookingRepositoryCustom) {
         this.iUserService = iUserService;
         this.iItemRepository = iItemRepository;
         this.iBookingRepository = iBookingRepository;
+        this.iBookingRepositoryCustom = iBookingRepositoryCustom;
     }
 
     @Override
-    public List<BookingInfoDto> readAllUserBookings(int userId, String state) {
+    public List<BookingInfoDto> readAllUserBookings(int userId, String state, int from, int size) {
+
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
+
         Optional<User> user = iUserService.getUser(userId);
 
         if (user.isEmpty()) {
@@ -59,27 +68,27 @@ public class BookingService implements IBookingService {
 
             switch (state) {
                 case "ALL":
-                    bookingList = iBookingRepository.findBookingsByUserId(userId);
+                    bookingList = iBookingRepositoryCustom.findBookingsByUserId(userId, from, size);
                     break;
 
                 case "CURRENT":
-                    bookingList = iBookingRepository.findAllCurrentUserBookings(LocalDateTime.now(), userId);
+                    bookingList = iBookingRepositoryCustom.findAllCurrentUserBookings(userId, from, size);
                     break;
 
                 case "PAST":
-                    bookingList = iBookingRepository.findAllPastUserBookings(LocalDateTime.now(), userId);
+                    bookingList = iBookingRepositoryCustom.findAllPastUserBookings(userId, from, size);
                     break;
 
                 case "FUTURE":
-                    bookingList = iBookingRepository.findAllFutureUserBookings(LocalDateTime.now(), userId);
+                    bookingList = iBookingRepositoryCustom.findAllFutureUserBookings(userId, from, size);
                     break;
 
                 case "WAITING":
-                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId);
+                    bookingList = iBookingRepositoryCustom.findAllUserBookingsByStatus(Status.valueOf(state), userId, from, size);
                     break;
 
                 case "REJECTED":
-                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId);
+                    bookingList = iBookingRepositoryCustom.findAllUserBookingsByStatus(Status.valueOf(state), userId, from, size);
                     break;
             }
 
@@ -110,12 +119,18 @@ public class BookingService implements IBookingService {
         if (booking.get().getUser().getId() == userId || booking.get().getItem().getUser().getId() == userId) {
             return BookingMapper.toBookingDto(booking.get());
         }
+
         log.error("NotFoundException: {}", "Get Booking - Бронирование может просматривать только создатель или хозяин вещи");
         throw new NotFoundException("Бронирование может просматривать только создатель или хозяин вещи");
     }
 
     @Override
-    public List<BookingInfoDto> readBookingListOfAllUserItems(int ownerId, String state) {
+    public List<BookingInfoDto> readBookingListOfAllUserItems(int ownerId, String state, int from, int size) {
+
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
 
         Optional<User> owner = iUserService.getUser(ownerId);
 
@@ -135,27 +150,27 @@ public class BookingService implements IBookingService {
 
             switch (state) {
                 case "ALL":
-                    bookingList = iBookingRepository.findAllItemOwnerBookings(ownerId);
+                    bookingList = iBookingRepositoryCustom.findAllItemOwnerBookings(ownerId, from, size);
                     break;
 
                 case "CURRENT":
-                    bookingList = iBookingRepository.findAllItemOwnerCurrentBookings(LocalDateTime.now(), ownerId);
+                    bookingList = iBookingRepositoryCustom.findAllItemOwnerCurrentBookings(ownerId, from, size);
                     break;
 
                 case "PAST":
-                    bookingList = iBookingRepository.findAllItemOwnerPastBookings(LocalDateTime.now(), ownerId);
+                    bookingList = iBookingRepositoryCustom.findAllItemOwnerPastBookings(ownerId, from, size);
                     break;
 
                 case "FUTURE":
-                    bookingList = iBookingRepository.findAllItemOwnerFutureBookings(LocalDateTime.now(), ownerId);
+                    bookingList = iBookingRepositoryCustom.findAllItemOwnerFutureBookings(ownerId, from, size);
                     break;
 
                 case "WAITING":
-                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId);
+                    bookingList = iBookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, from, size);
                     break;
 
                 case "REJECTED":
-                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId);
+                    bookingList = iBookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, from, size);
                     break;
             }
 
@@ -261,13 +276,25 @@ public class BookingService implements IBookingService {
     }
 
     @Override
-    public boolean delete(int bookingId, int userId) {
+    public HttpStatus delete(int bookingId, int userId) {
         Optional<Booking> bookingToDelete = iBookingRepository.findById(bookingId);
-        if (bookingToDelete.isEmpty() || bookingToDelete.get().getUser().getId() != userId) {
-            return false;
+        if (bookingToDelete.isEmpty()) {
+            log.error("NotFoundException: {}", "Пользователь с ИД " + bookingId + " не найден");
+            throw new NotFoundException("Booking с ИД " + bookingId + " не найден");
         }
+
+        if (iUserService.getUser(userId).isEmpty()) {
+            log.error("NotFoundException: {}", "Пользователь с ИД " + userId + " не найден");
+            throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
+        }
+
+        if (bookingToDelete.get().getUser().getId() != userId) {
+            log.error("BadRequestException: {}", "Пользователь с ИД " + userId + " не автор Booking");
+            throw new BadRequestException("Пользователь с ИД " + userId + " не автор Booking");
+        }
+
         iBookingRepository.delete(bookingToDelete.get());
-        return true;
+        return HttpStatus.OK;
     }
 
     private void checkTimeCrossing(CreateBookingDto createBookingDto) {
