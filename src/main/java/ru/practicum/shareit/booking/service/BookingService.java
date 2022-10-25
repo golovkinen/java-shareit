@@ -45,11 +45,6 @@ public class BookingService implements IBookingService {
     @Override
     public List<BookingInfoDto> readAllUserBookings(int userId, String state, int from, int size) {
 
-        if (from == 0 && size == 0) {
-            log.error("BadRequestException: {}", "size должен быть как минимум 1");
-            throw new BadRequestException("size должен быть как минимум 1");
-        }
-
         Optional<User> user = iUserService.getUser(userId);
 
         if (user.isEmpty()) {
@@ -66,28 +61,28 @@ public class BookingService implements IBookingService {
         if (Arrays.stream(BookingState.class.getEnumConstants()).anyMatch(e -> e.name().equals(state))) {
             List<Booking> bookingList = new ArrayList<>();
 
-            switch (state) {
-                case "ALL":
+            switch (BookingState.valueOf(state)) {
+                case ALL:
                     bookingList = iBookingRepositoryCustom.findBookingsByUserId(userId, from, size);
                     break;
 
-                case "CURRENT":
+                case CURRENT:
                     bookingList = iBookingRepositoryCustom.findAllCurrentUserBookings(userId, from, size);
                     break;
 
-                case "PAST":
+                case PAST:
                     bookingList = iBookingRepositoryCustom.findAllPastUserBookings(userId, from, size);
                     break;
 
-                case "FUTURE":
+                case FUTURE:
                     bookingList = iBookingRepositoryCustom.findAllFutureUserBookings(userId, from, size);
                     break;
 
-                case "WAITING":
+                case WAITING:
                     bookingList = iBookingRepositoryCustom.findAllUserBookingsByStatus(Status.valueOf(state), userId, from, size);
                     break;
 
-                case "REJECTED":
+                case REJECTED:
                     bookingList = iBookingRepositoryCustom.findAllUserBookingsByStatus(Status.valueOf(state), userId, from, size);
                     break;
             }
@@ -127,11 +122,6 @@ public class BookingService implements IBookingService {
     @Override
     public List<BookingInfoDto> readBookingListOfAllUserItems(int ownerId, String state, int from, int size) {
 
-        if (from == 0 && size == 0) {
-            log.error("BadRequestException: {}", "size должен быть как минимум 1");
-            throw new BadRequestException("size должен быть как минимум 1");
-        }
-
         Optional<User> owner = iUserService.getUser(ownerId);
 
         if (owner.isEmpty()) {
@@ -148,28 +138,28 @@ public class BookingService implements IBookingService {
 
             List<Booking> bookingList = new ArrayList<>();
 
-            switch (state) {
-                case "ALL":
+            switch (BookingState.valueOf(state)) {
+                case ALL:
                     bookingList = iBookingRepositoryCustom.findAllItemOwnerBookings(ownerId, from, size);
                     break;
 
-                case "CURRENT":
+                case CURRENT:
                     bookingList = iBookingRepositoryCustom.findAllItemOwnerCurrentBookings(ownerId, from, size);
                     break;
 
-                case "PAST":
+                case PAST:
                     bookingList = iBookingRepositoryCustom.findAllItemOwnerPastBookings(ownerId, from, size);
                     break;
 
-                case "FUTURE":
+                case FUTURE:
                     bookingList = iBookingRepositoryCustom.findAllItemOwnerFutureBookings(ownerId, from, size);
                     break;
 
-                case "WAITING":
+                case WAITING:
                     bookingList = iBookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, from, size);
                     break;
 
-                case "REJECTED":
+                case REJECTED:
                     bookingList = iBookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, from, size);
                     break;
             }

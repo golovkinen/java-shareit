@@ -6,6 +6,7 @@ import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.service.IRequestService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class RequestController {
     @GetMapping(value = "/all")
     public List<RequestDto> readAll(@RequestHeader(name = "X-Sharer-User-Id") int userId,
                                     @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
-                                    @PositiveOrZero @RequestParam(name = "size", defaultValue = "10") int size) {
+                                    @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         return iRequestService.readAll(from, size, userId);
     }
 

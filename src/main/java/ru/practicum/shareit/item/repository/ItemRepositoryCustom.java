@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.repository;
 
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Item;
@@ -16,8 +15,11 @@ import java.util.Optional;
 @Repository
 public class ItemRepositoryCustom implements IItemRepositoryCustom {
 
-    @Autowired
     private EntityManager entityManager;
+
+    public ItemRepositoryCustom(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Override
     public List<Item> searchItemByWord(String searchSentence, int from, int size) {

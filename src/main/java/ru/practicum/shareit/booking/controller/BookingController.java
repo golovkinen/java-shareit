@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.service.IBookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class BookingController {
     public List<BookingInfoDto> readAllUserBookings(@RequestParam(defaultValue = "ALL") String state,
                                                     @RequestHeader(name = "X-Sharer-User-Id") int userId,
                                                     @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
-                                                    @PositiveOrZero @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                    @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         return iBookingService.readAllUserBookings(userId, state, from, size);
     }
 
@@ -41,7 +42,7 @@ public class BookingController {
     public List<BookingInfoDto> readBookingListOfAllUserItems(@RequestParam(defaultValue = "ALL") String state,
                                                               @RequestHeader(name = "X-Sharer-User-Id") int userId,
                                                               @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
-                                                              @PositiveOrZero @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                              @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         return iBookingService.readBookingListOfAllUserItems(userId, state, from, size);
     }
 

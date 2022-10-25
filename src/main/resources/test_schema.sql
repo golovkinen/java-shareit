@@ -1,3 +1,5 @@
+drop
+all objects;
 
 create table if not exists users
 (
@@ -35,11 +37,11 @@ create table if not exists items
 create table if not exists bookings
 (
     booking_id INTEGER auto_increment,
-    start_date DATETIME                                             not null,
-    end_date   DATETIME                                             not null,
-    status     ENUM ('WAITING', 'APPROVED', 'CANCELED', 'REJECTED') not null,
-    item_id    INTEGER                                              not null,
-    booker_id  INTEGER                                              not null,
+    start_date DATETIME                                            not null,
+    end_date   DATETIME                                            not null,
+    status     ENUM('WAITING', 'APPROVED', 'CANCELED', 'REJECTED') not null,
+    item_id    INTEGER                                             not null,
+    booker_id  INTEGER                                             not null,
     constraint booking_pk primary key (booking_id),
     CONSTRAINT item_fk FOREIGN key (item_id) REFERENCES items ON DELETE CASCADE,
     CONSTRAINT booker_fk FOREIGN key (booker_id) REFERENCES users ON DELETE CASCADE

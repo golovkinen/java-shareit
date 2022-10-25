@@ -676,21 +676,6 @@ public class MockMvcTests {
     }
 
     @Test
-    @Order(42)
-    @DisplayName("GET /items Получаю все вещи Юзера1 - size 0")
-    void testGetAllItemsUser1Size0() throws Exception {
-
-        mockMvc.perform(get("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     @Order(43)
     @DisplayName("GET /items Получаю вещь с ИД 2 - Юзер не собственник")
     void testGetItemId2WrongUser() throws Exception {
@@ -839,20 +824,6 @@ public class MockMvcTests {
     }
 
     @Test
-    @Order(48)
-    @DisplayName("GET /items/search Size 0")
-    void testSearchItemSize0() throws Exception {
-
-        mockMvc.perform(get("/items/search").param("text", "Дрель")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     @Order(49)
     @DisplayName("GET /items/search Поиск часть слова OK")
     void testSearchItemPartWordOk() throws Exception {
@@ -880,7 +851,8 @@ public class MockMvcTests {
     @DisplayName("GET /items/search Поиск выводит только available OK")
     void testSearchItemOnlyAvailableOk() throws Exception {
 
-        mockMvc.perform(get("/items/search").param("text", "Шуруповерт")
+        mockMvc.perform(get("/items/search")
+                        .param("text", "Шуруповерт")
                         .contentType(MediaType.APPLICATION_JSON))
 
                 // Validate the response code and content type
@@ -969,20 +941,6 @@ public class MockMvcTests {
                 .andExpect(jsonPath("$[2].available", is(true)))
                 .andExpect(jsonPath("$[3].id", is(4)))
                 .andExpect(jsonPath("$[4].id", is(5)));
-    }
-
-    @Test
-    @Order(54)
-    @DisplayName("GET /items/all Получаю все вещи Size 0")
-    void testGetAllItemsSize0() throws Exception {
-
-        mockMvc.perform(get("/items/all")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -1609,38 +1567,6 @@ public class MockMvcTests {
     }
 
     @Test
-    @Order(87)
-    @DisplayName("GET /bookings/owner?state={state} получаю booking Owner size 0")
-    void testGetAllItemOwnerBookingSize0Fail() throws Exception {
-
-        mockMvc.perform(get("/bookings/owner")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "FUTURE")
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(88)
-    @DisplayName("GET /bookings/owner?state={state} получаю user booking size 0")
-    void testGetAllUserBookingSize0Fail() throws Exception {
-
-        mockMvc.perform(get("/bookings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 5)
-                        .param("state", "FUTURE")
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     @Order(89)
     @DisplayName("PATCH /bookings/{id} Approve booking 3 User Not Found")
     void testApproveBookingUserNotFound() throws Exception {
@@ -2213,20 +2139,6 @@ public class MockMvcTests {
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Order(124)
-    @DisplayName("GET /requests Get request Size 0")
-    void testGetRequestsSize0() throws Exception {
-
-        mockMvc.perform(get("/requests/all")
-                        .header("X-Sharer-User-Id", 1)
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
     }
 
     @Test

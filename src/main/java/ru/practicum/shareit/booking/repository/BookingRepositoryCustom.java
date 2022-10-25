@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
@@ -12,8 +11,11 @@ import java.util.List;
 @Repository
 public class BookingRepositoryCustom implements IBookingRepositoryCustom {
 
-    @Autowired
     private EntityManager entityManager;
+
+    public BookingRepositoryCustom(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Override
     public List<Booking> findAllUserBookingsByStatus(Status status, int userId, int from, int size) {
