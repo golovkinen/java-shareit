@@ -45,6 +45,11 @@ public class BookingService implements IBookingService {
     @Override
     public List<BookingInfoDto> readAllUserBookings(int userId, String state, int from, int size) {
 
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
+
         Optional<User> user = iUserService.getUser(userId);
 
         if (user.isEmpty()) {
@@ -121,6 +126,11 @@ public class BookingService implements IBookingService {
 
     @Override
     public List<BookingInfoDto> readBookingListOfAllUserItems(int ownerId, String state, int from, int size) {
+
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
 
         Optional<User> owner = iUserService.getUser(ownerId);
 

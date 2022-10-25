@@ -82,6 +82,11 @@ public class ItemService implements IItemService {
     @Override
     public List<ItemInfoDto> readAll(int from, int size) {
 
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
+
         List<Item> itemsList = iItemRepositoryCustom.readAllItemsPaged(from, size);
 
         if (itemsList.isEmpty()) {
@@ -104,6 +109,11 @@ public class ItemService implements IItemService {
         if (user.get().getItems().isEmpty()) {
             log.error("NotFoundException: {}", "При чтении всех вещей, у пользователя с ИД " + userId + " вещей не найдено");
             throw new NotFoundException("У пользователя с ИД " + userId + " нет вещей");
+        }
+
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
         }
 
         return iItemRepositoryCustom.readAllUserItemsByUserIdPaged(userId, from, size).stream()
@@ -198,6 +208,11 @@ public class ItemService implements IItemService {
 
     @Override
     public List<ItemInfoDto> searchItemByWord(String searchSentence, int from, int size) {
+
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
 
         List<Item> searchResult = iItemRepositoryCustom.searchItemByWord(searchSentence, from, size);
 

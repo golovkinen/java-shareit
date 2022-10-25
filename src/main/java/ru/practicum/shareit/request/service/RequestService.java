@@ -54,6 +54,11 @@ public class RequestService implements IRequestService {
             throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
         }
 
+        if (from == 0 && size == 0) {
+            log.error("BadRequestException: {}", "size должен быть как минимум 1");
+            throw new BadRequestException("size должен быть как минимум 1");
+        }
+
         List<Request> pagedList = iRequestRepositoryCustom.getPagedRequests(from, size, userId);
 
         return pagedList.stream().map(RequestMapper::toRequestDto).collect(Collectors.toList());
