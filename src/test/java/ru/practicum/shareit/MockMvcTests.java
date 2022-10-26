@@ -11,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.enums.Status;
+import ru.practicum.shareit.item.dto.CommentInfoDto;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.request.dto.RequestDto;
 
 import java.time.LocalDateTime;
 
@@ -1419,23 +1422,6 @@ public class MockMvcTests {
 
     @Test
     @Order(77)
-    @DisplayName("GET /items Получаю item 2 Юзера1 OK")
-    void testGetItem2Ok3() throws Exception {
-
-        mockMvc.perform(get("/items/{id}", 2)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1))
-
-                // Validate the response code and content type
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-
-                // Validate the returned fields
-                .andExpect(jsonPath("$.id", is(2)));
-    }
-
-  /*  @Test
-    @Order(77)
     @DisplayName("GET /bookings получаю booking User 5 Ok")
     void testGetAllBookingUser5Ok() throws Exception {
 
@@ -1936,22 +1922,6 @@ public class MockMvcTests {
                 .andExpect(jsonPath("$.created").value(IsNull.notNullValue()));
     }
 
-    @Test
-    @Order(109)
-    @DisplayName("GET /items Получаю item 2 Юзера1 OK")
-    void testGetItem2Ok4() throws Exception {
-
-        mockMvc.perform(get("/items/{id}", 2)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1))
-
-                // Validate the response code and content type
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-
-                // Validate the returned fields
-                .andExpect(jsonPath("$.id", is(2)));
-    }
 
     @Test
     @Order(109)
@@ -2636,5 +2606,4 @@ public class MockMvcTests {
                 .andExpect(jsonPath("$.id", is(9)));
     }
 
-   */
 }
