@@ -1420,35 +1420,6 @@ public class MockMvcTests {
                 .andExpect(jsonPath("$.item.name", is("Дрель")));
     }
 
-    @Test
-    @Order(77)
-    @DisplayName("GET /bookings получаю booking User 5 Ok")
-    void testGetAllBookingUser5Ok() throws Exception {
-
-        mockMvc.perform(get("/bookings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 5))
-
-                // Validate the response code and content type
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-
-                .andExpect(jsonPath("$[0].id", is(5)))
-                .andExpect(jsonPath("$[0].status", is(String.valueOf(Status.WAITING))))
-                .andExpect(jsonPath("$[0].booker.id", is(5)))
-                .andExpect(jsonPath("$[0].item.id", is(4)))
-                .andExpect(jsonPath("$[0].item.name", is("Дрель")))
-                .andExpect(jsonPath("$[1].id", is(2)))
-                .andExpect(jsonPath("$[1].status", is(String.valueOf(Status.WAITING))))
-                .andExpect(jsonPath("$[1].booker.id", is(5)))
-                .andExpect(jsonPath("$[1].item.id", is(3)))
-                .andExpect(jsonPath("$[1].item.name", is("Шуруповерт")))
-                .andExpect(jsonPath("$[2].id", is(1)))
-                .andExpect(jsonPath("$[2].status", is(String.valueOf(Status.APPROVED))))
-                .andExpect(jsonPath("$[2].booker.id", is(5)))
-                .andExpect(jsonPath("$[2].item.id", is(2)))
-                .andExpect(jsonPath("$[2].item.name", is("Дрель")));
-    }
 
     @Test
     @Order(77)
@@ -1511,26 +1482,6 @@ public class MockMvcTests {
 
                 // Validate the response code and content type
                 .andExpect(status().isBadRequest());
-    }
-
-
-    @Test
-    @Order(82)
-    @DisplayName("GET /bookings/owner получаю booking User 1 Ok")
-    void testGetAllItemOwnerBookingOk() throws Exception {
-
-        mockMvc.perform(get("/bookings/owner")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1))
-
-                // Validate the response code and content type
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-
-                .andExpect(jsonPath("$[0].id", is(4)))
-                .andExpect(jsonPath("$[1].id", is(3)))
-                .andExpect(jsonPath("$[2].id", is(2)))
-                .andExpect(jsonPath("$[3].id", is(1)));
     }
 
     @Test
