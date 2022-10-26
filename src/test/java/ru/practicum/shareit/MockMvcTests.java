@@ -1860,29 +1860,6 @@ public class MockMvcTests {
                 .andExpect(content().string("Нельзя комментировать пока не прошла аренда"));
     }
 
-    @Test
-    @Order(108)
-    @DisplayName("POST /comments Создаю comment Ok")
-    void testCreateCommentOk() throws Exception {
-
-        CommentInfoDto comment = new CommentInfoDto(null, "Comment for Item", null, null);
-
-        mockMvc.perform(post("/items/{itemId}/comment", 2)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 5)
-                        .content(objectMapper.writeValueAsString(comment)))
-
-                // Validate the response code and content type
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-
-                // Validate the returned fields
-                .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.text", is("Comment for Item")))
-                .andExpect(jsonPath("$.authorName", is("Name4")))
-                .andExpect(jsonPath("$.created").value(IsNull.notNullValue()));
-    }
-
 
     @Test
     @Order(109)
@@ -1954,43 +1931,6 @@ public class MockMvcTests {
                 .andExpect(jsonPath("$.created").value(IsNull.notNullValue()))
                 .andExpect(jsonPath("$.requesterId", is(3)))
                 .andExpect(jsonPath("$.items").isEmpty());
-    }
-
-    @Test
-    @Order(113)
-    @DisplayName("GET /bookings/owner?state={state} получаю booking User Current 1 Ok")
-    void testGetAllItemOwnerBookingCurrentOk() throws Exception {
-
-        mockMvc.perform(get("/bookings/owner")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "CURRENT"))
-
-                // Validate the response code and content type
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-
-                .andExpect(jsonPath("$[0].id", is(2)));
-    }
-
-    @Test
-    @Order(114)
-    @DisplayName("GET /bookings?state={state} получаю booking CURRENT User 4 Ok")
-    void testGetAllBookingCurrentUser4Ok() throws Exception {
-
-        mockMvc.perform(get("/bookings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 5)
-                        .param("state", "CURRENT"))
-
-                // Validate the response code and content type
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-
-                .andExpect(jsonPath("$[0].id", is(2)))
-                .andExpect(jsonPath("$[0].booker.id", is(5)))
-                .andExpect(jsonPath("$[0].item.id", is(3)))
-                .andExpect(jsonPath("$[0].item.name", is("Шуруповерт")));
     }
 
     @Test
