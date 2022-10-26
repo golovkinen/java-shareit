@@ -4,10 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.repository.BookingRepositoryCustom;
 import ru.practicum.shareit.booking.repository.IBookingRepository;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -16,7 +16,6 @@ import ru.practicum.shareit.item.repository.IItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.IUserRepository;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,10 +34,6 @@ public class BookingRepositoryTests {
     IUserRepository iUserRepository;
     @Autowired
     ICommentRepository iCommentRepository;
-    BookingRepositoryCustom bookingRepositoryCustom;
-
-    @Autowired
-    EntityManager entityManager;
     @Autowired
     IBookingRepository iBookingRepository;
 
@@ -53,8 +48,6 @@ public class BookingRepositoryTests {
 
     @BeforeEach
     void beforeEach() {
-
-        bookingRepositoryCustom = new BookingRepositoryCustom(entityManager);
 
         user1 = iUserRepository.save(new User(null, "Email1@mail.com", "Name1", Collections.singletonList(item1), new HashSet<>(), new HashSet<>(), new HashSet<>()));
         user2 = iUserRepository.save(new User(null, "Email2@mail.com", "Name2", Collections.singletonList(item2), Collections.singleton(booking1), new HashSet<>(), Collections.singleton(comment1)));
@@ -72,7 +65,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllUserBookings() {
-        List<Booking> list = bookingRepositoryCustom.findBookingsByUserId(2, 0, 10);
+        List<Booking> list = iBookingRepository.findBookingsByUserId(2, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(3, list.size());
@@ -81,7 +74,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllUserBookingsPast() {
-        List<Booking> list = bookingRepositoryCustom.findAllPastUserBookings(2, 0, 10);
+        List<Booking> list = iBookingRepository.findAllPastUserBookings(LocalDateTime.now(), 2, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());
@@ -90,7 +83,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllUserBookingsFuture() {
-        List<Booking> list = bookingRepositoryCustom.findAllFutureUserBookings(2, 0, 10);
+        List<Booking> list = iBookingRepository.findAllFutureUserBookings(LocalDateTime.now(), 2, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(2, list.size());
@@ -99,14 +92,14 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllUserBookingsCurrent() {
-        List<Booking> list = bookingRepositoryCustom.findAllCurrentUserBookings(2, 0, 10);
+        List<Booking> list = iBookingRepository.findAllCurrentUserBookings(LocalDateTime.now(), 2, PageRequest.of(0, 10));
 
         assertTrue(list.isEmpty());
     }
 
     @Test
     void getAllUserBookingsWaiting() {
-        List<Booking> list = bookingRepositoryCustom.findAllUserBookingsByStatus(Status.WAITING, 2, 0, 10);
+        List<Booking> list = iBookingRepository.findAllUserBookingsByStatus(Status.WAITING, 2, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());
@@ -115,7 +108,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllUserBookingsApproved() {
-        List<Booking> list = bookingRepositoryCustom.findAllUserBookingsByStatus(Status.APPROVED, 2, 0, 10);
+        List<Booking> list = iBookingRepository.findAllUserBookingsByStatus(Status.APPROVED, 2, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());
@@ -124,7 +117,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllUserBookingsRejected() {
-        List<Booking> list = bookingRepositoryCustom.findAllUserBookingsByStatus(Status.REJECTED, 2, 0, 10);
+        List<Booking> list = iBookingRepository.findAllUserBookingsByStatus(Status.REJECTED, 2, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());
@@ -141,7 +134,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllOwnerBookings() {
-        List<Booking> list = bookingRepositoryCustom.findAllItemOwnerBookings(1, 0, 10);
+        List<Booking> list = iBookingRepository.findAllItemOwnerBookings(1, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(3, list.size());
@@ -150,7 +143,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllOwnerBookingsPast() {
-        List<Booking> list = bookingRepositoryCustom.findAllItemOwnerPastBookings(1, 0, 10);
+        List<Booking> list = iBookingRepository.findAllItemOwnerPastBookings(LocalDateTime.now(), 1, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());
@@ -159,7 +152,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllOwnerBookingsFuture() {
-        List<Booking> list = bookingRepositoryCustom.findAllItemOwnerFutureBookings(1, 0, 10);
+        List<Booking> list = iBookingRepository.findAllItemOwnerFutureBookings(LocalDateTime.now(), 1, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(2, list.size());
@@ -168,14 +161,14 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllOwnerBookingsCurrent() {
-        List<Booking> list = bookingRepositoryCustom.findAllItemOwnerCurrentBookings(1, 0, 10);
+        List<Booking> list = iBookingRepository.findAllItemOwnerCurrentBookings(LocalDateTime.now(), 1, PageRequest.of(0, 10));
 
         assertTrue(list.isEmpty());
     }
 
     @Test
     void getAllOwnerBookingsWaiting() {
-        List<Booking> list = bookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.WAITING, 1, 0, 10);
+        List<Booking> list = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.WAITING, 1, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());
@@ -184,7 +177,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllOwnerBookingsApproved() {
-        List<Booking> list = bookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.APPROVED, 1, 0, 10);
+        List<Booking> list = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.APPROVED, 1, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());
@@ -193,7 +186,7 @@ public class BookingRepositoryTests {
 
     @Test
     void getAllOwnerBookingsRejected() {
-        List<Booking> list = bookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.REJECTED, 1, 0, 10);
+        List<Booking> list = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.REJECTED, 1, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.service.IRequestService;
@@ -11,6 +12,7 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping(path = "/requests")
 public class RequestController {
 
@@ -29,7 +31,7 @@ public class RequestController {
     @GetMapping(value = "/all")
     public List<RequestDto> readAll(@RequestHeader(name = "X-Sharer-User-Id") int userId,
                                     @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
-                                    @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+                                    @Valid @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         return iRequestService.readAll(from, size, userId);
     }
 

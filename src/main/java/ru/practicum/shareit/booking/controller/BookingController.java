@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingInfoDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
@@ -13,6 +14,7 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
+@Validated
 @Slf4j
 @RequestMapping(path = "/bookings")
 public class BookingController {
@@ -27,7 +29,7 @@ public class BookingController {
     public List<BookingInfoDto> readAllUserBookings(@RequestParam(defaultValue = "ALL") String state,
                                                     @RequestHeader(name = "X-Sharer-User-Id") int userId,
                                                     @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
-                                                    @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                    @Valid @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         return iBookingService.readAllUserBookings(userId, state, from, size);
     }
 
@@ -42,7 +44,7 @@ public class BookingController {
     public List<BookingInfoDto> readBookingListOfAllUserItems(@RequestParam(defaultValue = "ALL") String state,
                                                               @RequestHeader(name = "X-Sharer-User-Id") int userId,
                                                               @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
-                                                              @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                              @Valid @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         return iBookingService.readBookingListOfAllUserItems(userId, state, from, size);
     }
 

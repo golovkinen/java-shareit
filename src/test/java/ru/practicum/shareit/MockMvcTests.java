@@ -11,9 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.enums.Status;
-import ru.practicum.shareit.item.dto.CommentInfoDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.request.dto.RequestDto;
 
 import java.time.LocalDateTime;
 
@@ -1437,7 +1434,7 @@ public class MockMvcTests {
                 .andExpect(jsonPath("$.id", is(2)));
     }
 
-    @Test
+  /*  @Test
     @Order(77)
     @DisplayName("GET /bookings получаю booking User 5 Ok")
     void testGetAllBookingUser5Ok() throws Exception {
@@ -2638,4 +2635,6 @@ public class MockMvcTests {
                 // Validate the returned fields
                 .andExpect(jsonPath("$.id", is(9)));
     }
+
+   */
 }

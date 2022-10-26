@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptionhandler.BadRequestException;
@@ -14,7 +16,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ICommentRepository;
 import ru.practicum.shareit.item.repository.IItemRepository;
-import ru.practicum.shareit.item.repository.IItemRepositoryCustom;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.repository.IRequestRepository;
 import ru.practicum.shareit.user.model.User;
@@ -22,6 +23,7 @@ import ru.practicum.shareit.user.repository.IUserRepository;
 import ru.practicum.shareit.user.service.IUserService;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,15 +33,13 @@ import java.util.stream.Collectors;
 public class ItemService implements IItemService {
 
     private final IItemRepository iItemRepository;
-    private final IItemRepositoryCustom iItemRepositoryCustom;
     private final ICommentRepository iCommentRepository;
     private final IUserService iUserService;
     private final IUserRepository iUserRepository;
     private final IRequestRepository iRequestRepository;
 
-    public ItemService(IItemRepository iItemRepository, IItemRepositoryCustom iItemRepositoryCustom, ICommentRepository iCommentRepository, IUserService iUserService, IUserRepository iUserRepository, IRequestRepository iRequestRepository) {
+    public ItemService(IItemRepository iItemRepository, ICommentRepository iCommentRepository, IUserService iUserService, IUserRepository iUserRepository, IRequestRepository iRequestRepository) {
         this.iItemRepository = iItemRepository;
-        this.iItemRepositoryCustom = iItemRepositoryCustom;
         this.iCommentRepository = iCommentRepository;
         this.iUserService = iUserService;
         this.iUserRepository = iUserRepository;
@@ -67,7 +67,6 @@ public class ItemService implements IItemService {
 
             item.setRequest(request.get());
             request.get().getRequestResponses().add(item);
-            iRequestRepository.save(request.get());
         }
 
         Item newItem = iItemRepository.save(item);
@@ -82,16 +81,14 @@ public class ItemService implements IItemService {
     @Override
     public List<ItemInfoDto> readAll(int from, int size) {
 
-        if (from == 0 && size == 0) {
-            log.error("BadRequestException: {}", "size должен быть как минимум 1");
-            throw new BadRequestException("size должен быть как минимум 1");
-        }
+        Pageable pageable = PageRequest.of(from / size, size);
 
-        List<Item> itemsList = iItemRepositoryCustom.readAllItemsPaged(from, size);
+        List<Item> itemsList = iItemRepository.findAllPaged(pageable);
 
         if (itemsList.isEmpty()) {
             throw new NotFoundException("Совсем нет вещей");
         }
+
         return itemsList.stream().map(f -> ItemMapper.toItemDto(f,
                         Optional.empty(),
                         Optional.empty()))
@@ -100,6 +97,9 @@ public class ItemService implements IItemService {
 
     @Override
     public List<ItemInfoDto> readAllUserItems(int userId, int from, int size) {
+
+        Pageable pageable = PageRequest.of(from / size, size);
+
         Optional<User> user = iUserService.getUser(userId);
         if (user.isEmpty()) {
             log.error("NotFoundException: {}", "При чтении всех вещей, Пользователь с ИД " + userId + " не найден");
@@ -111,15 +111,10 @@ public class ItemService implements IItemService {
             throw new NotFoundException("У пользователя с ИД " + userId + " нет вещей");
         }
 
-        if (from == 0 && size == 0) {
-            log.error("BadRequestException: {}", "size должен быть как минимум 1");
-            throw new BadRequestException("size должен быть как минимум 1");
-        }
-
-        return iItemRepositoryCustom.readAllUserItemsByUserIdPaged(userId, from, size).stream()
+        return iItemRepository.readAllUserItemsByUserIdPaged(userId, pageable).stream()
                 .map(f -> ItemMapper.toItemDto(f,
-                        iItemRepositoryCustom.getItemsLastBooking(f.getId()),
-                        iItemRepositoryCustom.getItemsNextBooking(f.getId())))
+                        iItemRepository.getItemsLastBooking(f.getId(), LocalDateTime.now()),
+                        iItemRepository.getItemsNextBooking(f.getId(), LocalDateTime.now())))
                 .collect(Collectors.toList());
     }
 
@@ -133,8 +128,8 @@ public class ItemService implements IItemService {
 
         if (item.get().getUser().getId() == userId) {
             return ItemMapper.toItemDto(item.get(),
-                    iItemRepositoryCustom.getItemsLastBooking(item.get().getId()),
-                    iItemRepositoryCustom.getItemsNextBooking(item.get().getId()));
+                    iItemRepository.getItemsLastBooking(item.get().getId(), LocalDateTime.now()),
+                    iItemRepository.getItemsNextBooking(item.get().getId(), LocalDateTime.now()));
         }
         return ItemMapper.toItemDto(item.get(),
                 Optional.empty(),
@@ -209,17 +204,18 @@ public class ItemService implements IItemService {
     @Override
     public List<ItemInfoDto> searchItemByWord(String searchSentence, int from, int size) {
 
-        if (from == 0 && size == 0) {
-            log.error("BadRequestException: {}", "size должен быть как минимум 1");
-            throw new BadRequestException("size должен быть как минимум 1");
+        if (searchSentence.isBlank()) {
+            return Collections.emptyList();
         }
 
-        List<Item> searchResult = iItemRepositoryCustom.searchItemByWord(searchSentence, from, size);
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        List<Item> searchResult = iItemRepository.searchItemByWord(searchSentence, pageable);
 
         return searchResult.stream()
                 .map(f -> ItemMapper.toItemDto(f,
-                        iItemRepositoryCustom.getItemsLastBooking(f.getId()),
-                        iItemRepositoryCustom.getItemsNextBooking(f.getId())))
+                        iItemRepository.getItemsLastBooking(f.getId(), LocalDateTime.now()),
+                        iItemRepository.getItemsNextBooking(f.getId(), LocalDateTime.now())))
                 .collect(Collectors.toList());
     }
 

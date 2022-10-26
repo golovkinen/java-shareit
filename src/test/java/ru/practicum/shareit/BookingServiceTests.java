@@ -7,7 +7,6 @@ import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.IBookingRepository;
-import ru.practicum.shareit.booking.repository.IBookingRepositoryCustom;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -39,8 +38,6 @@ public class BookingServiceTests {
 
     IBookingRepository iBookingRepository;
 
-    IBookingRepositoryCustom iBookingRepositoryCustom;
-
     User user1;
 
     User user2;
@@ -59,10 +56,9 @@ public class BookingServiceTests {
         iUserService = mock(IUserService.class);
         iRequestRepository = mock(IRequestRepository.class);
         iBookingRepository = mock(IBookingRepository.class);
-        iBookingRepositoryCustom = mock(IBookingRepositoryCustom.class);
         iItemRepository = mock(IItemRepository.class);
 
-        bookingService = new BookingService(iUserService, iItemRepository, iBookingRepository, iBookingRepositoryCustom);
+        bookingService = new BookingService(iUserService, iItemRepository, iBookingRepository);
 
         user1 = new User(1, "Email1@mail.com", "Name1", Collections.singletonList(item1), new HashSet<>(), new HashSet<>(), new HashSet<>());
         user2 = new User(2, "Email2@mail.com", "Name2", Collections.singletonList(item2), Collections.singleton(booking1), new HashSet<>(), Collections.singleton(comment1));
@@ -82,7 +78,7 @@ public class BookingServiceTests {
         when(iUserService.getUser(anyInt()))
                 .thenReturn(Optional.of(user2));
 
-        when(iBookingRepositoryCustom.findBookingsByUserId(anyInt(), anyInt(), anyInt()))
+        when(iBookingRepository.findBookingsByUserId(anyInt(), any()))
                 .thenReturn(Collections.singletonList(booking1));
 
         final List<BookingInfoDto> list = bookingService.readAllUserBookings(1, "ALL", 0, 10);
@@ -115,7 +111,7 @@ public class BookingServiceTests {
         when(iUserService.getUser(anyInt()))
                 .thenReturn(Optional.of(user1));
 
-        when(iBookingRepositoryCustom.findAllItemOwnerBookings(anyInt(), anyInt(), anyInt()))
+        when(iBookingRepository.findAllItemOwnerBookings(anyInt(), any()))
                 .thenReturn(Collections.singletonList(booking1));
 
         final List<BookingInfoDto> list = bookingService.readBookingListOfAllUserItems(1, "ALL", 0, 10);

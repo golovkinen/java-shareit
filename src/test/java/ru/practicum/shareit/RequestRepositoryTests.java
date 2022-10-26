@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.model.Booking;
@@ -14,11 +15,9 @@ import ru.practicum.shareit.item.repository.ICommentRepository;
 import ru.practicum.shareit.item.repository.IItemRepository;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.repository.IRequestRepository;
-import ru.practicum.shareit.request.repository.RequestRepositoryCustom;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.IUserRepository;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,11 +40,6 @@ public class RequestRepositoryTests {
 
     @Autowired
     IBookingRepository iBookingRepository;
-
-    RequestRepositoryCustom requestRepositoryCustom;
-
-    @Autowired
-    EntityManager entityManager;
     @Autowired
     IRequestRepository iRequestRepository;
 
@@ -65,8 +59,6 @@ public class RequestRepositoryTests {
 
     @BeforeEach
     void beforeEach() {
-
-        requestRepositoryCustom = new RequestRepositoryCustom(entityManager);
 
         user1 = iUserRepository.save(new User(null, "Email1@mail.com", "Name1", Collections.singletonList(item1), new HashSet<>(), new HashSet<>(), new HashSet<>()));
         user2 = iUserRepository.save(new User(null, "Email2@mail.com", "Name2", Collections.singletonList(item2), Collections.singleton(booking1), new HashSet<>(), Collections.singleton(comment1)));
@@ -96,7 +88,7 @@ public class RequestRepositoryTests {
 
     @Test
     void getAllRequests() {
-        List<Request> list = requestRepositoryCustom.getPagedRequests(0, 10, 2);
+        List<Request> list = iRequestRepository.getPagedRequests(2, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(2, list.size());

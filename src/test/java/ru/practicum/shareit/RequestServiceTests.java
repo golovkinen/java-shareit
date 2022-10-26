@@ -9,7 +9,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.repository.IRequestRepository;
-import ru.practicum.shareit.request.repository.IRequestRepositoryCustom;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.IUserService;
@@ -29,7 +28,6 @@ public class RequestServiceTests {
     IUserService iUserService;
     RequestService requestService;
     IRequestRepository iRequestRepository;
-    IRequestRepositoryCustom iRequestRepositoryCustom;
 
     User user1;
     User user2;
@@ -45,9 +43,8 @@ public class RequestServiceTests {
 
         iUserService = mock(IUserService.class);
         iRequestRepository = mock(IRequestRepository.class);
-        iRequestRepositoryCustom = mock(IRequestRepositoryCustom.class);
 
-        requestService = new RequestService(iUserService, iRequestRepository, iRequestRepositoryCustom);
+        requestService = new RequestService(iUserService, iRequestRepository);
 
         user1 = new User(1, "Email1@mail.com", "Name1", Collections.singletonList(item1), new HashSet<>(), new HashSet<>(), new HashSet<>());
         user2 = new User(2, "Email2@mail.com", "Name2", Collections.singletonList(item2), Collections.singleton(booking1), new HashSet<>(), Collections.singleton(comment1));
@@ -86,7 +83,7 @@ public class RequestServiceTests {
         when(iUserService.getUser(anyInt()))
                 .thenReturn(Optional.of(user1));
 
-        when(iRequestRepositoryCustom.getPagedRequests(anyInt(), anyInt(), anyInt()))
+        when(iRequestRepository.getPagedRequests(anyInt(), any()))
                 .thenReturn(Collections.singletonList(request1));
 
         final List<RequestDto> list = requestService.readAll(0, 10, 1);

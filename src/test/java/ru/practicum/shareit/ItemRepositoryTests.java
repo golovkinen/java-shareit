@@ -4,16 +4,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ICommentRepository;
 import ru.practicum.shareit.item.repository.IItemRepository;
-import ru.practicum.shareit.item.repository.ItemRepositoryCustom;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.IUserRepository;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,10 +32,7 @@ public class ItemRepositoryTests {
     IUserRepository iUserRepository;
     @Autowired
     ICommentRepository iCommentRepository;
-    @Autowired
-    EntityManager entityManager;
 
-    ItemRepositoryCustom itemRepositoryCustom;
 
     User user1;
     User user2;
@@ -46,8 +42,6 @@ public class ItemRepositoryTests {
 
     @BeforeEach
     void beforeEach() {
-
-        itemRepositoryCustom = new ItemRepositoryCustom(entityManager);
 
         user1 = iUserRepository.save(new User(null, "Email1@mail.com", "Name1", Collections.singletonList(item1), new HashSet<>(), new HashSet<>(), new HashSet<>()));
         user2 = iUserRepository.save(new User(null, "Email2@mail.com", "Name2", Collections.singletonList(item2), new HashSet<>(), new HashSet<>(), Collections.singleton(comment1)));
@@ -59,7 +53,7 @@ public class ItemRepositoryTests {
 
     @Test
     void readAll() {
-        List<Item> list = itemRepositoryCustom.readAllItemsPaged(0, 10);
+        List<Item> list = iItemRepository.findAllPaged(PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(2, list.size());
@@ -69,7 +63,7 @@ public class ItemRepositoryTests {
 
     @Test
     void readAllUserItems() {
-        List<Item> list = itemRepositoryCustom.readAllUserItemsByUserIdPaged(1, 0, 10);
+        List<Item> list = iItemRepository.readAllUserItemsByUserIdPaged(1, PageRequest.of(0, 10));
 
         assertNotNull(list);
         assertEquals(1, list.size());

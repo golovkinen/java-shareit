@@ -11,7 +11,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ICommentRepository;
 import ru.practicum.shareit.item.repository.IItemRepository;
-import ru.practicum.shareit.item.repository.ItemRepositoryCustom;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.repository.IRequestRepository;
 import ru.practicum.shareit.user.model.User;
@@ -31,7 +30,6 @@ public class ItemServiceTests {
 
 
     IItemRepository iItemRepository;
-    ItemRepositoryCustom itemRepositoryCustom;
     ICommentRepository iCommentRepository;
     IUserService iUserService;
     IUserRepository iUserRepository;
@@ -41,12 +39,11 @@ public class ItemServiceTests {
     @BeforeEach
     void beforeEach() {
         iItemRepository = mock(IItemRepository.class);
-        itemRepositoryCustom = mock(ItemRepositoryCustom.class);
         iCommentRepository = mock(ICommentRepository.class);
         iUserService = mock(IUserService.class);
         iUserRepository = mock(IUserRepository.class);
         iRequestRepository = mock(IRequestRepository.class);
-        itemService = new ItemService(iItemRepository, itemRepositoryCustom, iCommentRepository, iUserService, iUserRepository, iRequestRepository);
+        itemService = new ItemService(iItemRepository, iCommentRepository, iUserService, iUserRepository, iRequestRepository);
 
     }
 
@@ -56,7 +53,7 @@ public class ItemServiceTests {
         User user1 = new User(1, "email1@mail.com", "Name1", new ArrayList<>(), new HashSet<>(), new HashSet<>(), new HashSet<>());
         Item item1 = new Item(1, "Item Name", "Item Desc", true, user1, new HashSet<>(), new HashSet<>(), null);
 
-        when(itemRepositoryCustom.readAllItemsPaged(anyInt(), anyInt()))
+        when(iItemRepository.findAllPaged(any()))
                 .thenReturn(Collections.singletonList(item1));
 
         final List<ItemInfoDto> list = itemService.readAll(0, 10);
@@ -77,7 +74,7 @@ public class ItemServiceTests {
         when(iUserService.getUser(anyInt()))
                 .thenReturn(Optional.of(user1));
 
-        when(itemRepositoryCustom.readAllUserItemsByUserIdPaged(anyInt(), anyInt(), anyInt()))
+        when(iItemRepository.readAllUserItemsByUserIdPaged(anyInt(), any()))
                 .thenReturn(Collections.singletonList(item1));
 
         final List<ItemInfoDto> list = itemService.readAllUserItems(1, 0, 10);
@@ -123,10 +120,10 @@ public class ItemServiceTests {
         when(iItemRepository.findById(anyInt()))
                 .thenReturn(Optional.of(item1));
 
-        when(itemRepositoryCustom.getItemsLastBooking(anyInt()))
+        when(iItemRepository.getItemsLastBooking(anyInt(), any()))
                 .thenReturn(Optional.empty());
 
-        when(itemRepositoryCustom.getItemsNextBooking(anyInt()))
+        when(iItemRepository.getItemsNextBooking(anyInt(), any()))
                 .thenReturn(Optional.empty());
 
         final ItemInfoDto newItem = itemService.read(1, 1);
@@ -169,13 +166,13 @@ public class ItemServiceTests {
         when(iUserService.getUser(anyInt()))
                 .thenReturn(Optional.of(user1));
 
-        when(itemRepositoryCustom.searchItemByWord(anyString(), anyInt(), anyInt()))
+        when(iItemRepository.searchItemByWord(anyString(), any()))
                 .thenReturn(Collections.singletonList(item1));
 
-        when(itemRepositoryCustom.getItemsLastBooking(anyInt()))
+        when(iItemRepository.getItemsLastBooking(anyInt(), any()))
                 .thenReturn(Optional.empty());
 
-        when(itemRepositoryCustom.getItemsNextBooking(anyInt()))
+        when(iItemRepository.getItemsNextBooking(anyInt(), any()))
                 .thenReturn(Optional.empty());
 
         final List<ItemInfoDto> newItem = itemService.searchItemByWord("Item", 0, 10);
@@ -209,10 +206,10 @@ public class ItemServiceTests {
         when(iItemRepository.checkUserBookedItemBeforeComment(anyInt(), anyInt(), any()))
                 .thenReturn(Collections.singletonList(lastBooking));
 
-        when(itemRepositoryCustom.getItemsLastBooking(anyInt()))
+        when(iItemRepository.getItemsLastBooking(anyInt(), any()))
                 .thenReturn(Optional.empty());
 
-        when(itemRepositoryCustom.getItemsNextBooking(anyInt()))
+        when(iItemRepository.getItemsNextBooking(anyInt(), any()))
                 .thenReturn(Optional.empty());
 
         when(iCommentRepository.save(any()))

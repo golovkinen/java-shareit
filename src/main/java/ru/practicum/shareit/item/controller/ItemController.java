@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentInfoDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -14,6 +15,7 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
+@Validated
 @Slf4j
 @RequestMapping("/items")
 public class ItemController {
@@ -36,10 +38,10 @@ public class ItemController {
         return iItemService.readAll(from, size);
     }
 
-    @GetMapping(value = "/{id}")
-    public ItemInfoDto read(@PathVariable(name = "id") int id,
+    @GetMapping(value = "/{itemId}")
+    public ItemInfoDto read(@PathVariable(name = "itemId") int itemId,
                             @RequestHeader(name = "X-Sharer-User-Id") int userId) {
-        return iItemService.read(id, userId);
+        return iItemService.read(itemId, userId);
     }
 
     @GetMapping(value = "/search")

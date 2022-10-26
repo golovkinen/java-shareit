@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingInfoDto;
@@ -11,7 +13,6 @@ import ru.practicum.shareit.booking.enums.Status;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.IBookingRepository;
-import ru.practicum.shareit.booking.repository.IBookingRepositoryCustom;
 import ru.practicum.shareit.exceptionhandler.BadRequestException;
 import ru.practicum.shareit.exceptionhandler.NotFoundException;
 import ru.practicum.shareit.exceptionhandler.WrongStateException;
@@ -20,6 +21,7 @@ import ru.practicum.shareit.item.repository.IItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.IUserService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,22 +35,19 @@ public class BookingService implements IBookingService {
     private final IUserService iUserService;
     private final IItemRepository iItemRepository;
     private final IBookingRepository iBookingRepository;
-    private final IBookingRepositoryCustom iBookingRepositoryCustom;
 
-    public BookingService(IUserService iUserService, IItemRepository iItemRepository, IBookingRepository iBookingRepository, IBookingRepositoryCustom iBookingRepositoryCustom) {
+    public BookingService(IUserService iUserService, IItemRepository iItemRepository, IBookingRepository iBookingRepository) {
         this.iUserService = iUserService;
         this.iItemRepository = iItemRepository;
         this.iBookingRepository = iBookingRepository;
-        this.iBookingRepositoryCustom = iBookingRepositoryCustom;
     }
 
     @Override
     public List<BookingInfoDto> readAllUserBookings(int userId, String state, int from, int size) {
 
-        if (from == 0 && size == 0) {
-            log.error("BadRequestException: {}", "size должен быть как минимум 1");
-            throw new BadRequestException("size должен быть как минимум 1");
-        }
+        int page = from / size;
+
+        Pageable pageable = PageRequest.of(page, size);
 
         Optional<User> user = iUserService.getUser(userId);
 
@@ -68,27 +67,27 @@ public class BookingService implements IBookingService {
 
             switch (BookingState.valueOf(state)) {
                 case ALL:
-                    bookingList = iBookingRepositoryCustom.findBookingsByUserId(userId, from, size);
+                    bookingList = iBookingRepository.findBookingsByUserId(userId, pageable);
                     break;
 
                 case CURRENT:
-                    bookingList = iBookingRepositoryCustom.findAllCurrentUserBookings(userId, from, size);
+                    bookingList = iBookingRepository.findAllCurrentUserBookings(LocalDateTime.now(), userId, pageable);
                     break;
 
                 case PAST:
-                    bookingList = iBookingRepositoryCustom.findAllPastUserBookings(userId, from, size);
+                    bookingList = iBookingRepository.findAllPastUserBookings(LocalDateTime.now(), userId, pageable);
                     break;
 
                 case FUTURE:
-                    bookingList = iBookingRepositoryCustom.findAllFutureUserBookings(userId, from, size);
+                    bookingList = iBookingRepository.findAllFutureUserBookings(LocalDateTime.now(), userId, pageable);
                     break;
 
                 case WAITING:
-                    bookingList = iBookingRepositoryCustom.findAllUserBookingsByStatus(Status.valueOf(state), userId, from, size);
+                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId, pageable);
                     break;
 
                 case REJECTED:
-                    bookingList = iBookingRepositoryCustom.findAllUserBookingsByStatus(Status.valueOf(state), userId, from, size);
+                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId, pageable);
                     break;
             }
 
@@ -127,10 +126,9 @@ public class BookingService implements IBookingService {
     @Override
     public List<BookingInfoDto> readBookingListOfAllUserItems(int ownerId, String state, int from, int size) {
 
-        if (from == 0 && size == 0) {
-            log.error("BadRequestException: {}", "size должен быть как минимум 1");
-            throw new BadRequestException("size должен быть как минимум 1");
-        }
+        int page = from / size;
+
+        Pageable pageable = PageRequest.of(page, size);
 
         Optional<User> owner = iUserService.getUser(ownerId);
 
@@ -150,27 +148,27 @@ public class BookingService implements IBookingService {
 
             switch (BookingState.valueOf(state)) {
                 case ALL:
-                    bookingList = iBookingRepositoryCustom.findAllItemOwnerBookings(ownerId, from, size);
+                    bookingList = iBookingRepository.findAllItemOwnerBookings(ownerId, pageable);
                     break;
 
                 case CURRENT:
-                    bookingList = iBookingRepositoryCustom.findAllItemOwnerCurrentBookings(ownerId, from, size);
+                    bookingList = iBookingRepository.findAllItemOwnerCurrentBookings(LocalDateTime.now(), ownerId, pageable);
                     break;
 
                 case PAST:
-                    bookingList = iBookingRepositoryCustom.findAllItemOwnerPastBookings(ownerId, from, size);
+                    bookingList = iBookingRepository.findAllItemOwnerPastBookings(LocalDateTime.now(), ownerId, pageable);
                     break;
 
                 case FUTURE:
-                    bookingList = iBookingRepositoryCustom.findAllItemOwnerFutureBookings(ownerId, from, size);
+                    bookingList = iBookingRepository.findAllItemOwnerFutureBookings(LocalDateTime.now(), ownerId, pageable);
                     break;
 
                 case WAITING:
-                    bookingList = iBookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, from, size);
+                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, pageable);
                     break;
 
                 case REJECTED:
-                    bookingList = iBookingRepositoryCustom.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, from, size);
+                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, pageable);
                     break;
             }
 
