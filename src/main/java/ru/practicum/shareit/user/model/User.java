@@ -7,7 +7,7 @@ import lombok.Setter;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.model.Request;
 
 import javax.persistence.*;
 import java.util.List;
@@ -41,7 +41,7 @@ public class User {
     private Set<Booking> bookings;
 
     @OneToMany(mappedBy = "user")
-    private Set<ItemRequest> requests;
+    private Set<Request> requests;
 
     @OneToMany(mappedBy = "user")
     private Set<Comment> comments;

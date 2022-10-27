@@ -2,16 +2,19 @@ package ru.practicum.shareit.booking.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingInfoDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
 import ru.practicum.shareit.booking.service.IBookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
+@Validated
 @Slf4j
 @RequestMapping(path = "/bookings")
 public class BookingController {
@@ -24,8 +27,10 @@ public class BookingController {
 
     @GetMapping
     public List<BookingInfoDto> readAllUserBookings(@RequestParam(defaultValue = "ALL") String state,
-                                                    @RequestHeader(name = "X-Sharer-User-Id") int userId) {
-        return iBookingService.readAllUserBookings(userId, state);
+                                                    @RequestHeader(name = "X-Sharer-User-Id") int userId,
+                                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                                    @Valid @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        return iBookingService.readAllUserBookings(userId, state, from, size);
     }
 
     @GetMapping(value = "/{bookingId}")
@@ -37,8 +42,10 @@ public class BookingController {
 
     @GetMapping(value = "/owner")
     public List<BookingInfoDto> readBookingListOfAllUserItems(@RequestParam(defaultValue = "ALL") String state,
-                                                              @RequestHeader(name = "X-Sharer-User-Id") int userId) {
-        return iBookingService.readBookingListOfAllUserItems(userId, state);
+                                                              @RequestHeader(name = "X-Sharer-User-Id") int userId,
+                                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                                              @Valid @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        return iBookingService.readBookingListOfAllUserItems(userId, state, from, size);
     }
 
     @PostMapping
@@ -57,12 +64,8 @@ public class BookingController {
     }
 
     @DeleteMapping(value = "/{bookingId}")
-    public ResponseEntity<?> delete(@PathVariable(name = "bookingId") int bookingId,
-                                    @RequestHeader(name = "X-Sharer-User-Id") int userId) {
-        final boolean deleted = iBookingService.delete(bookingId, userId);
-
-        return deleted
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public HttpStatus delete(@PathVariable(name = "bookingId") int bookingId,
+                             @RequestHeader(name = "X-Sharer-User-Id") int userId) {
+        return iBookingService.delete(bookingId, userId);
     }
 }

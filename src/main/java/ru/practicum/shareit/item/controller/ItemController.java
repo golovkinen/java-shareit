@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentInfoDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -9,9 +10,12 @@ import ru.practicum.shareit.item.dto.ItemInfoDto;
 import ru.practicum.shareit.item.service.IItemService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
+@Validated
 @Slf4j
 @RequestMapping("/items")
 public class ItemController {
@@ -22,19 +26,29 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemInfoDto> readAllUserItems(@RequestHeader(name = "X-Sharer-User-Id") int userId) {
-        return iItemService.readAllUserItems(userId);
+    public List<ItemInfoDto> readAllUserItems(@RequestHeader(name = "X-Sharer-User-Id") int userId,
+                                              @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                              @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        return iItemService.readAllUserItems(userId, from, size);
     }
 
-    @GetMapping(value = "/{id}")
-    public ItemInfoDto read(@PathVariable(name = "id") int id,
+    @GetMapping(value = "/all")
+    public List<ItemInfoDto> readAllItems(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                          @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        return iItemService.readAll(from, size);
+    }
+
+    @GetMapping(value = "/{itemId}")
+    public ItemInfoDto read(@PathVariable(name = "itemId") int itemId,
                             @RequestHeader(name = "X-Sharer-User-Id") int userId) {
-        return iItemService.read(id, userId);
+        return iItemService.read(itemId, userId);
     }
 
     @GetMapping(value = "/search")
-    public List<ItemInfoDto> search(@RequestParam String text) {
-        return iItemService.searchItemByWord(text);
+    public List<ItemInfoDto> search(@RequestParam String text,
+                                    @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                    @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
+        return iItemService.searchItemByWord(text, from, size);
     }
 
     @PostMapping

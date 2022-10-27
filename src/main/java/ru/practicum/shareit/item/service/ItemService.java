@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptionhandler.BadRequestException;
@@ -14,11 +16,14 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ICommentRepository;
 import ru.practicum.shareit.item.repository.IItemRepository;
-import ru.practicum.shareit.item.repository.IItemRepositoryCustom;
+import ru.practicum.shareit.request.model.Request;
+import ru.practicum.shareit.request.repository.IRequestRepository;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.IUserRepository;
 import ru.practicum.shareit.user.service.IUserService;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,15 +33,17 @@ import java.util.stream.Collectors;
 public class ItemService implements IItemService {
 
     private final IItemRepository iItemRepository;
-    private final IItemRepositoryCustom iItemRepositoryCustom;
     private final ICommentRepository iCommentRepository;
     private final IUserService iUserService;
+    private final IUserRepository iUserRepository;
+    private final IRequestRepository iRequestRepository;
 
-    public ItemService(IItemRepository iItemRepository, IItemRepositoryCustom iItemRepositoryCustom, ICommentRepository iCommentRepository, IUserService iUserService) {
+    public ItemService(IItemRepository iItemRepository, ICommentRepository iCommentRepository, IUserService iUserService, IUserRepository iUserRepository, IRequestRepository iRequestRepository) {
         this.iItemRepository = iItemRepository;
-        this.iItemRepositoryCustom = iItemRepositoryCustom;
         this.iCommentRepository = iCommentRepository;
         this.iUserService = iUserService;
+        this.iUserRepository = iUserRepository;
+        this.iRequestRepository = iRequestRepository;
     }
 
     @Override
@@ -46,21 +53,42 @@ public class ItemService implements IItemService {
             log.error("NotFoundException: {}", "При создании вещи, Пользователь с ИД " + userId + " не найден");
             throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
         }
+
         Item item = ItemMapper.toItem(itemDto, user.get());
 
+        if (itemDto.getRequestId() != null) {
+
+            Optional<Request> request = iRequestRepository.findById(itemDto.getRequestId());
+
+            if (request.isEmpty()) {
+                log.error("NotFoundException: {}", "Запрос с ИД " + itemDto.getRequestId() + " не найден");
+                throw new NotFoundException("Запрос с ИД " + itemDto.getRequestId() + " не найден");
+            }
+
+            item.setRequest(request.get());
+            request.get().getRequestResponses().add(item);
+        }
+
         Item newItem = iItemRepository.save(item);
+
         user.get().getItems().add(newItem);
+        iUserRepository.save(user.get());
         return ItemMapper.toItemDto(newItem,
                 Optional.empty(),
                 Optional.empty());
     }
 
     @Override
-    public List<ItemInfoDto> readAll() {
-        List<Item> itemsList = iItemRepository.findAll();
+    public List<ItemInfoDto> readAll(int from, int size) {
+
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        List<Item> itemsList = iItemRepository.findAllPaged(pageable);
+
         if (itemsList.isEmpty()) {
             throw new NotFoundException("Совсем нет вещей");
         }
+
         return itemsList.stream().map(f -> ItemMapper.toItemDto(f,
                         Optional.empty(),
                         Optional.empty()))
@@ -68,15 +96,25 @@ public class ItemService implements IItemService {
     }
 
     @Override
-    public List<ItemInfoDto> readAllUserItems(int userId) {
+    public List<ItemInfoDto> readAllUserItems(int userId, int from, int size) {
+
+        Pageable pageable = PageRequest.of(from / size, size);
+
         Optional<User> user = iUserService.getUser(userId);
         if (user.isEmpty()) {
             log.error("NotFoundException: {}", "При чтении всех вещей, Пользователь с ИД " + userId + " не найден");
             throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
         }
-        return user.get().getItems().stream().map(f -> ItemMapper.toItemDto(f,
-                        iItemRepositoryCustom.getItemsLastBooking(f.getId()),
-                        iItemRepositoryCustom.getItemsNextBooking(f.getId())))
+
+        if (user.get().getItems().isEmpty()) {
+            log.error("NotFoundException: {}", "При чтении всех вещей, у пользователя с ИД " + userId + " вещей не найдено");
+            throw new NotFoundException("У пользователя с ИД " + userId + " нет вещей");
+        }
+
+        return iItemRepository.readAllUserItemsByUserIdPaged(userId, pageable).stream()
+                .map(f -> ItemMapper.toItemDto(f,
+                        iItemRepository.getItemsLastBooking(f.getId(), LocalDateTime.now()),
+                        iItemRepository.getItemsNextBooking(f.getId(), LocalDateTime.now())))
                 .collect(Collectors.toList());
     }
 
@@ -90,8 +128,8 @@ public class ItemService implements IItemService {
 
         if (item.get().getUser().getId() == userId) {
             return ItemMapper.toItemDto(item.get(),
-                    iItemRepositoryCustom.getItemsLastBooking(item.get().getId()),
-                    iItemRepositoryCustom.getItemsNextBooking(item.get().getId()));
+                    iItemRepository.getItemsLastBooking(item.get().getId(), LocalDateTime.now()),
+                    iItemRepository.getItemsNextBooking(item.get().getId(), LocalDateTime.now()));
         }
         return ItemMapper.toItemDto(item.get(),
                 Optional.empty(),
@@ -151,28 +189,33 @@ public class ItemService implements IItemService {
         return HttpStatus.OK;
     }
 
-    @Override
     public HttpStatus deleteAllUserItems(int id) {
-        if (iUserService.getUser(id).isEmpty()) {
+        if (this.iUserService.getUser(id).isEmpty()) {
             log.error("NotFoundException: {}", "При удалении всех вещей пользователя, Пользователь с ИД " + id + " не найден");
             throw new NotFoundException("Пользователь с ИД " + id + " не найден");
+        } else {
+            this.iItemRepository.findAllByUserId(id).stream().forEach((f) -> {
+                this.iItemRepository.deleteById(f.getId());
+            });
+            return HttpStatus.OK;
         }
-
-        iItemRepository.deleteAllUserItems(id);
-        return HttpStatus.OK;
     }
 
     @Override
-    public List<ItemInfoDto> searchItemByWord(String searchSentence) {
-        List<Item> searchResult = iItemRepositoryCustom.searchItemByWord(searchSentence);
-        if (searchResult == null) {
-            log.error("NotFoundException: {}", "При поиске ничего не найдено");
-            throw new NotFoundException("Ничего не найдено");
+    public List<ItemInfoDto> searchItemByWord(String searchSentence, int from, int size) {
+
+        if (searchSentence.isBlank()) {
+            return Collections.emptyList();
         }
+
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        List<Item> searchResult = iItemRepository.searchItemByWord(searchSentence, pageable);
+
         return searchResult.stream()
                 .map(f -> ItemMapper.toItemDto(f,
-                        iItemRepositoryCustom.getItemsLastBooking(f.getId()),
-                        iItemRepositoryCustom.getItemsNextBooking(f.getId())))
+                        iItemRepository.getItemsLastBooking(f.getId(), LocalDateTime.now()),
+                        iItemRepository.getItemsNextBooking(f.getId(), LocalDateTime.now())))
                 .collect(Collectors.toList());
     }
 

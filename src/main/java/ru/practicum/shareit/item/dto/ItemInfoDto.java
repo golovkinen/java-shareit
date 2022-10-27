@@ -20,6 +20,7 @@ public class ItemInfoDto {
     private BookingInfoForItemDto lastBooking;
     private BookingInfoForItemDto nextBooking;
     private List<CommentInfoDto> comments;
+    private Integer requestId;
 
     @AllArgsConstructor
     @NoArgsConstructor

@@ -14,8 +14,7 @@ import javax.validation.ConstraintViolationException;
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value
-            = {ConstraintViolationException.class})
+    @ExceptionHandler({ConstraintViolationException.class})
     public ResponseEntity<Object> handleConflict(
             RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "This should be application specific";
@@ -46,6 +45,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @ExceptionHandler({ConflictException.class})
     public ResponseEntity<Object> handleConflictException(
+            Exception ex, WebRequest request) {
+        return new ResponseEntity<>(
+                new ErrorResponse(ex.getMessage()), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler({org.hibernate.exception.ConstraintViolationException.class})
+    public ResponseEntity<Object> handleSQLConflictException(
             Exception ex, WebRequest request) {
         return new ResponseEntity<>(
                 new ErrorResponse(ex.getMessage()), HttpStatus.CONFLICT);

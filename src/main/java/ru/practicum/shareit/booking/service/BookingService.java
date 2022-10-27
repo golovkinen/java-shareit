@@ -2,6 +2,9 @@ package ru.practicum.shareit.booking.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dto.BookingInfoDto;
 import ru.practicum.shareit.booking.dto.CreateBookingDto;
@@ -40,7 +43,12 @@ public class BookingService implements IBookingService {
     }
 
     @Override
-    public List<BookingInfoDto> readAllUserBookings(int userId, String state) {
+    public List<BookingInfoDto> readAllUserBookings(int userId, String state, int from, int size) {
+
+        int page = from / size;
+
+        Pageable pageable = PageRequest.of(page, size);
+
         Optional<User> user = iUserService.getUser(userId);
 
         if (user.isEmpty()) {
@@ -57,29 +65,29 @@ public class BookingService implements IBookingService {
         if (Arrays.stream(BookingState.class.getEnumConstants()).anyMatch(e -> e.name().equals(state))) {
             List<Booking> bookingList = new ArrayList<>();
 
-            switch (state) {
-                case "ALL":
-                    bookingList = iBookingRepository.findBookingsByUserId(userId);
+            switch (BookingState.valueOf(state)) {
+                case ALL:
+                    bookingList = iBookingRepository.findBookingsByUserId(userId, pageable);
                     break;
 
-                case "CURRENT":
-                    bookingList = iBookingRepository.findAllCurrentUserBookings(LocalDateTime.now(), userId);
+                case CURRENT:
+                    bookingList = iBookingRepository.findAllCurrentUserBookings(LocalDateTime.now(), userId, pageable);
                     break;
 
-                case "PAST":
-                    bookingList = iBookingRepository.findAllPastUserBookings(LocalDateTime.now(), userId);
+                case PAST:
+                    bookingList = iBookingRepository.findAllPastUserBookings(LocalDateTime.now(), userId, pageable);
                     break;
 
-                case "FUTURE":
-                    bookingList = iBookingRepository.findAllFutureUserBookings(LocalDateTime.now(), userId);
+                case FUTURE:
+                    bookingList = iBookingRepository.findAllFutureUserBookings(LocalDateTime.now(), userId, pageable);
                     break;
 
-                case "WAITING":
-                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId);
+                case WAITING:
+                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId, pageable);
                     break;
 
-                case "REJECTED":
-                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId);
+                case REJECTED:
+                    bookingList = iBookingRepository.findAllUserBookingsByStatus(Status.valueOf(state), userId, pageable);
                     break;
             }
 
@@ -110,12 +118,17 @@ public class BookingService implements IBookingService {
         if (booking.get().getUser().getId() == userId || booking.get().getItem().getUser().getId() == userId) {
             return BookingMapper.toBookingDto(booking.get());
         }
+
         log.error("NotFoundException: {}", "Get Booking - Бронирование может просматривать только создатель или хозяин вещи");
         throw new NotFoundException("Бронирование может просматривать только создатель или хозяин вещи");
     }
 
     @Override
-    public List<BookingInfoDto> readBookingListOfAllUserItems(int ownerId, String state) {
+    public List<BookingInfoDto> readBookingListOfAllUserItems(int ownerId, String state, int from, int size) {
+
+        int page = from / size;
+
+        Pageable pageable = PageRequest.of(page, size);
 
         Optional<User> owner = iUserService.getUser(ownerId);
 
@@ -133,29 +146,29 @@ public class BookingService implements IBookingService {
 
             List<Booking> bookingList = new ArrayList<>();
 
-            switch (state) {
-                case "ALL":
-                    bookingList = iBookingRepository.findAllItemOwnerBookings(ownerId);
+            switch (BookingState.valueOf(state)) {
+                case ALL:
+                    bookingList = iBookingRepository.findAllItemOwnerBookings(ownerId, pageable);
                     break;
 
-                case "CURRENT":
-                    bookingList = iBookingRepository.findAllItemOwnerCurrentBookings(LocalDateTime.now(), ownerId);
+                case CURRENT:
+                    bookingList = iBookingRepository.findAllItemOwnerCurrentBookings(LocalDateTime.now(), ownerId, pageable);
                     break;
 
-                case "PAST":
-                    bookingList = iBookingRepository.findAllItemOwnerPastBookings(LocalDateTime.now(), ownerId);
+                case PAST:
+                    bookingList = iBookingRepository.findAllItemOwnerPastBookings(LocalDateTime.now(), ownerId, pageable);
                     break;
 
-                case "FUTURE":
-                    bookingList = iBookingRepository.findAllItemOwnerFutureBookings(LocalDateTime.now(), ownerId);
+                case FUTURE:
+                    bookingList = iBookingRepository.findAllItemOwnerFutureBookings(LocalDateTime.now(), ownerId, pageable);
                     break;
 
-                case "WAITING":
-                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId);
+                case WAITING:
+                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, pageable);
                     break;
 
-                case "REJECTED":
-                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId);
+                case REJECTED:
+                    bookingList = iBookingRepository.findAllItemOwnerBookingsByStatus(Status.valueOf(state), ownerId, pageable);
                     break;
             }
 
@@ -261,13 +274,25 @@ public class BookingService implements IBookingService {
     }
 
     @Override
-    public boolean delete(int bookingId, int userId) {
+    public HttpStatus delete(int bookingId, int userId) {
         Optional<Booking> bookingToDelete = iBookingRepository.findById(bookingId);
-        if (bookingToDelete.isEmpty() || bookingToDelete.get().getUser().getId() != userId) {
-            return false;
+        if (bookingToDelete.isEmpty()) {
+            log.error("NotFoundException: {}", "Пользователь с ИД " + bookingId + " не найден");
+            throw new NotFoundException("Booking с ИД " + bookingId + " не найден");
         }
+
+        if (iUserService.getUser(userId).isEmpty()) {
+            log.error("NotFoundException: {}", "Пользователь с ИД " + userId + " не найден");
+            throw new NotFoundException("Пользователь с ИД " + userId + " не найден");
+        }
+
+        if (bookingToDelete.get().getUser().getId() != userId) {
+            log.error("BadRequestException: {}", "Пользователь с ИД " + userId + " не автор Booking");
+            throw new BadRequestException("Пользователь с ИД " + userId + " не автор Booking");
+        }
+
         iBookingRepository.delete(bookingToDelete.get());
-        return true;
+        return HttpStatus.OK;
     }
 
     private void checkTimeCrossing(CreateBookingDto createBookingDto) {
