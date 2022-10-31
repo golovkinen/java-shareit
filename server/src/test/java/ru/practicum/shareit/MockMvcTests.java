@@ -34,47 +34,6 @@ public class MockMvcTests {
     ObjectMapper objectMapper;
 
     @Test
-    @Order(1)
-    @DisplayName("POST /users Создаю пользователя имя null")
-    void testCreateUserNullName() throws Exception {
-
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"Email1@mail.com\",\"name\":null}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(2)
-    @DisplayName("POST /users Если email - null")
-    void emailNullError() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":null,\"name\":\"Name1\"}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(3)
-    @DisplayName("POST /users Если email - поле не заполнено")
-    void emailBlankError() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"\",\"name\":\"Name1\"}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(4)
-    @DisplayName("POST /users Если email - введен неверно")
-    void emailWrongError() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"email.comyandex@\",\"name\":\"Name1\"}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     @Order(5)
     @DisplayName("POST /users Создаю пользователя OK")
     void testCreateUserOk() throws Exception {
@@ -307,88 +266,6 @@ public class MockMvcTests {
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Order(23)
-    @DisplayName("POST /items Создаю item без названия - null")
-    void testCreateItemNullName() throws Exception {
-
-        mockMvc.perform(post("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .content("{\"name\":null, \"description\":\"Отвертка крестовая\", \"available\":true}"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(24)
-    @DisplayName("POST /items Создаю item без описания - null")
-    void testCreateItemNullDescription() throws Exception {
-
-        mockMvc.perform(post("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .content("{\"name\":\"Отвертка\", \"description\":null, \"available\":true}"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Order(25)
-    @DisplayName("POST /items Создаю item без названия")
-    void testCreateItemEmptyName() throws Exception {
-
-        mockMvc.perform(post("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .content("{\"name\":\"\", \"description\":\"Отвертка крестовая\", \"available\":true}"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(26)
-    @DisplayName("POST /items Создаю item без описания")
-    void testCreateItemEmptyDescription() throws Exception {
-
-        mockMvc.perform(post("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .content("{\"name\":\"Отвертка\", \"description\":\"\", \"available\":true}"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(27)
-    @DisplayName("POST /items Создаю item AvailableNull")
-    void testCreateItemAvailableNull() throws Exception {
-
-        mockMvc.perform(post("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .content("{\"name\":\"Отвертка\", \"description\":\"Отвертка крестовая\", \"available\":null}"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(28)
-    @DisplayName("POST /items Создаю без X-Sharer")
-    void testCreateWithoutXSharer() throws Exception {
-
-        mockMvc.perform(post("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Отвертка\", \"description\":\"Отвертка крестовая\", \"available\":true}"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -675,20 +552,6 @@ public class MockMvcTests {
                 .andExpect(content().string("У пользователя с ИД 3 нет вещей"));
     }
 
-    @Test
-    @Order(42)
-    @DisplayName("GET /items Получаю все вещи Юзера1 - size 0")
-    void testGetAllItemsUser1Size0() throws Exception {
-
-        mockMvc.perform(get("/items")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
 
     @Test
     @Order(43)
@@ -839,20 +702,6 @@ public class MockMvcTests {
     }
 
     @Test
-    @Order(48)
-    @DisplayName("GET /items/search Size 0")
-    void testSearchItemSize0() throws Exception {
-
-        mockMvc.perform(get("/items/search").param("text", "Дрель")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     @Order(49)
     @DisplayName("GET /items/search Поиск часть слова OK")
     void testSearchItemPartWordOk() throws Exception {
@@ -970,20 +819,6 @@ public class MockMvcTests {
                 .andExpect(jsonPath("$[2].available", is(true)))
                 .andExpect(jsonPath("$[3].id", is(4)))
                 .andExpect(jsonPath("$[4].id", is(5)));
-    }
-
-    @Test
-    @Order(54)
-    @DisplayName("GET /items/all Получаю все вещи Size 0")
-    void testGetAllItemsSize0() throws Exception {
-
-        mockMvc.perform(get("/items/all")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -1543,37 +1378,7 @@ public class MockMvcTests {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    @Order(87)
-    @DisplayName("GET /bookings/owner?state={state} получаю booking Owner size 0")
-    void testGetAllItemOwnerBookingSize0Fail() throws Exception {
 
-        mockMvc.perform(get("/bookings/owner")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1)
-                        .param("state", "FUTURE")
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(88)
-    @DisplayName("GET /bookings/owner?state={state} получаю user booking size 0")
-    void testGetAllUserBookingSize0Fail() throws Exception {
-
-        mockMvc.perform(get("/bookings")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 5)
-                        .param("state", "FUTURE")
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
 
     @Test
     @Order(89)
@@ -1828,37 +1633,7 @@ public class MockMvcTests {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    @Order(110)
-    @DisplayName("POST /requests Создаю request description blank")
-    void testCreateRequestNoDescription() throws Exception {
 
-        RequestDto request = new RequestDto(null, "", null, null, null);
-
-        mockMvc.perform(post("/requests")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 3)
-                        .content(objectMapper.writeValueAsString(request)))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @Order(111)
-    @DisplayName("POST /requests Создаю request description null")
-    void testCreateRequestDescriptionNull() throws Exception {
-
-        RequestDto request = new RequestDto(null, null, null, null, null);
-
-        mockMvc.perform(post("/requests")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 3)
-                        .content(objectMapper.writeValueAsString(request)))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
-    }
 
     @Test
     @Order(112)
@@ -2033,20 +1808,6 @@ public class MockMvcTests {
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @Order(124)
-    @DisplayName("GET /requests Get request Size 0")
-    void testGetRequestsSize0() throws Exception {
-
-        mockMvc.perform(get("/requests/all")
-                        .header("X-Sharer-User-Id", 1)
-                        .param("from", "0")
-                        .param("size", "0"))
-
-                // Validate the response code and content type
-                .andExpect(status().isBadRequest());
     }
 
     @Test
